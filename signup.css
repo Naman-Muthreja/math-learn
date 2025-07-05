@@ -1,0 +1,19 @@
+body{
+ background-color: whitesmoke;
+}
+.title
+{
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+            font-size:17px;
+            font-weight: bold;
+           
+            padding-left: 16px;
+            padding-right: 16px;
+}
+button
+{
+     background-image: linear-gradient(to right, gray,white);
+                    padding: 7px 20px;
+                     border-radius: 18px;
+                     margin-top: 20px;
+}
