@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Geometric Mean Flash Round ⚡</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top, #001f33, #000814);
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  .game-container {
+    max-width: 420px;
+    margin: 40px auto;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 0 20px rgba(0,255,255,0.2);
+  }
+  h1 {
+    font-size: 2.2rem;
+    color: #ffe600;
+    text-shadow: 0 0 12px #fff58c, 0 0 24px #ffe600;
+    margin-bottom: 8px;
+  }
+  #timer {
+    font-size: 1.8rem;
+    color: #00eaff;
+    margin: 10px 0;
+    transition: transform 0.2s ease;
+  }
+  #question {
+    font-size: 1.3rem;
+    margin: 18px 0;
+  }
+  input {
+    font-size: 1.1rem;
+    padding: 6px;
+    text-align: center;
+    width: 140px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-top: 4px;
+  }
+  button {
+    font-size: 1.05rem;
+    padding: 8px 14px;
+    margin: 8px 6px;
+    background: #ffe600;
+    color: #000;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  button:hover {
+    transform: scale(1.08);
+  }
+  #score, #highscore {
+    font-size: 1.1rem;
+    margin-top: 12px;
+    color: #00ffb3;
+  }
+  .flash {
+    animation: flashEffect .28s ease;
+  }
+  @keyframes flashEffect {
+    0% { background: rgba(255,255,0,0.35); }
+    100% { background: transparent; }
+  }
+  .lightning {
+    animation: lightningStrike 0.3s ease-in-out;
+  }
+  @keyframes lightningStrike {
+    0% { text-shadow: 0 0 8px #fff, 0 0 18px #00eaff; }
+    50% { text-shadow: 0 0 18px #fff, 0 0 32px #00eaff; }
+    100% { text-shadow: 0 0 8px #fff, 0 0 18px #00eaff; }
+  }
+  .score-pop {
+    animation: pop 0.25s ease;
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <h1>⚡ Flash Round: Geometric Mean ⚡</h1>
+  <div id="timer">Time: 60</div>
+  <div id="question">Loading...</div>
+
+  <input type="text" id="answer" placeholder="Your answer">
+  <button onclick="insertRoot()">√</button>
+  <br>
+  <button onclick="submitAnswer()">Submit</button>
+  <button onclick="startGame(true)" id="restartBtn" style="display:none;">Restart</button>
+
+  <div id="score">Score: 0</div>
+  <div id="highscore">High Score: 0</div>
+</div>
+
+<script>
+let timeLeft = 60;
+let score = 0;
+let streak = 0;
+let correctAnswer = 0;
+let timerInterval;
+let highScore = Number(localStorage.getItem("flashHighScore") || 0);
+document.getElementById("highscore").textContent = "High Score: " + highScore;
+
+function startGame(restart=false) {
+  if (restart) {
+    score = 0; streak = 0; timeLeft = 60;
+    document.getElementById("score").textContent = "Score: 0";
+    document.getElementById("answer").style.display = "";
+    document.querySelectorAll("button").forEach(btn => btn.style.display = "");
+    document.getElementById("restartBtn").style.display = "none";
+  }
+  generateQuestion();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    const timerEl = document.getElementById("timer");
+    timerEl.textContent = "Time: " + timeLeft;
+    timerEl.classList.add("lightning");
+    setTimeout(()=>timerEl.classList.remove("lightning"),150);
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      endGame();
+    }
+  }, 1000);
+}
+
+function generateQuestion(){
+  const a = Math.floor(Math.random()*20)+1;
+  const b = Math.floor(Math.random()*20)+1;
+  correctAnswer = Math.round(Math.sqrt(a * b) * 100) / 100;
+  document.getElementById("question").textContent = `Find the geometric mean of ${a} and ${b}:`;
+  document.getElementById("answer").value = "";
+  document.body.classList.remove("flash");
+}
+
+function parseUserInputToNumber(input){
+  if(!input || typeof input !== "string") return null;
+  let s = input.trim().replace(/\s+/g, "").replace(/×/g, "*");
+  const coeffRoot = s.match(/^([0-9.]+)?(?:√|sqrt|root)\(?([0-9.*]+)\)?$/i);
+  if(coeffRoot){
+    const coeff = coeffRoot[1] ? parseFloat(coeffRoot[1]) : 1;
+    const inner = coeffRoot[2];
+    if(/^[0-9.]+(\*[0-9.]+)*$/.test(inner)){
+      const parts = inner.split("*").map(Number);
+      if(parts.some(isNaN)) return null;
+      return coeff * Math.sqrt(parts.reduce((a,b)=>a*b,1));
+    }
+    return null;
+  }
+  const sqrtMatch = s.match(/^sqrt\(?([0-9.]+)\)?$/i);
+  if(sqrtMatch) return Math.sqrt(parseFloat(sqrtMatch[1]));
+  if(/^[0-9.]+(\*[0-9.]+)+$/.test(s)){
+    const parts = s.split("*").map(Number);
+    if(parts.some(isNaN)) return null;
+    return parts.reduce((a,b)=>a*b,1);
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+
+function submitAnswer(){
+  const raw = document.getElementById("answer").value.trim();
+  const parsed = parseUserInputToNumber(raw);
+  if(!Number.isFinite(parsed)){
+    alert("Please enter a number or a radical (examples: 2.45, √6, 3√5, √(4*9) ).");
+    return;
+  }
+  const tolerance = 0.1;
+  const isCorrect = Math.abs(parsed - correctAnswer) < tolerance;
+  if(isCorrect){
+    score += 10 + (streak * 2);
+    streak++;
+    document.getElementById("score").classList.add("score-pop");
+    setTimeout(()=>document.getElementById("score").classList.remove("score-pop"),250);
+    document.body.classList.add("flash");
+  } else {
+    streak = 0;
+  }
+  document.getElementById("score").textContent = "Score: " + score;
+  generateQuestion();
+}
+
+function insertRoot(){
+  const input = document.getElementById("answer");
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const txt = input.value;
+  const rootSym = "√";
+  input.value = txt.slice(0,start) + rootSym + txt.slice(end);
+  const pos = start + rootSym.length;
+  input.setSelectionRange(pos,pos);
+  input.focus();
+}
+
+function endGame(){
+  document.getElementById("question").textContent = "⏱ Time's up!";
+  document.getElementById("answer").style.display = "none";
+  document.querySelectorAll("button").forEach(btn => btn.style.display = "none");
+  document.getElementById("restartBtn").style.display = "";
+  if(score > highScore){
+    highScore = score;
+    localStorage.setItem("flashHighScore", highScore);
+    document.getElementById("highscore").textContent = "High Score: " + highScore + " 🎉";
+  }
+}
+
+document.getElementById("answer").addEventListener("keydown", e=>{
+  if(e.key === "Enter") submitAnswer();
+});
+
+window.onload = startGame;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boss Brawl Solving Equations ⚔️</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #000814, #001f33);
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+.game-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: rgba(0,0,0,0.7);
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(0,255,255,0.4);
+}
+h1 {
+  color: #ffdd00;
+  text-shadow: 0 0 12px #fff, 0 0 24px #ffdd00;
+  margin-bottom: 20px;
+}
+#boss-name {
+  font-size:1.5rem;
+  margin-bottom:8px;
+}
+.bar-container {
+  width: 100%;
+  height: 22px;
+  background: #222;
+  border-radius: 12px;
+  margin: 8px 0;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px #000;
+}
+.bar-fill {
+  height:100%;
+  transition: width 0.4s ease;
+  border-radius: 12px;
+}
+#boss-bar { background: linear-gradient(to right,#ff4c4c,#ff0000); width:100%; }
+#player-bar { background: linear-gradient(to right,#4cff4c,#00ff00); width:100%; }
+#battle-question {
+  font-size:1.3rem;
+  margin: 20px 0;
+  color:#00eaff;
+  text-shadow: 0 0 6px #00eaff;
+}
+input {
+  padding:10px;
+  font-size:1.1rem;
+  width:140px;
+  text-align:center;
+  border-radius:8px;
+  border:none;
+  outline:none;
+}
+button {
+  padding:10px 16px;
+  font-size:1rem;
+  background:#ffdd00;
+  color:#000;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin:6px;
+  transition: transform 0.2s;
+}
+button:hover { transform: scale(1.08); }
+#battle-feedback {
+  margin-top:14px;
+  font-size:1.1rem;
+  min-height:28px;
+}
+#battle-score {
+  margin-top:14px;
+  font-size:1.2rem;
+  color:#00ffb3;
+}
+.flash-hit { animation: flashEffect 0.25s ease; }
+@keyframes flashEffect { 0% {background:rgba(255,255,0,0.5);} 100% {background:transparent;} }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <h1>⚔️Boss Brawl Solving Equations</h1>
+
+  <div id="boss-name">Boss: Dragon</div>
+  <div class="bar-container"><div id="boss-bar" class="bar-fill"></div></div>
+
+  <div style="font-size:1.2rem; margin-top:8px;">Your HP: <span id="player-hp-text">30</span></div>
+  <div class="bar-container"><div id="player-bar" class="bar-fill"></div></div>
+
+  <div id="battle-question">Solve to attack the boss!</div>
+  <input type="text" id="battle-answer" placeholder="Your answer"><br>
+  <button onclick="submitBattleAnswer()">Attack!</button>
+
+  <div id="battle-feedback"></div>
+  <div id="battle-score">Score: 0</div>
+</div>
+
+<script>
+const bosses = [
+  {name: "Dragon", hp: 50, questions:[{q:"2x + 3 = 11", a:4},{q:"x/2 + 3 = 7", a:8},{q:"5x - 4 = 11", a:3}]},
+  {name: "Giant Troll", hp: 70, questions:[{q:"3y - 5 = 16", a:7},{q:"y/4 + 2 = 5", a:12},{q:"7y + 2 = 23", a:3}]},
+  {name: "Hydra", hp: 100, questions:[{q:"5z + 6 = 31", a:5},{q:"z/3 - 2 = 3", a:15},{q:"4z + 7 = 23", a:4}]}
+];
+
+let currentBoss = 0, bossHP = bosses[0].hp, playerHP = 30, score = 0, currentQuestionIndex = 0;
+
+function updateBars() {
+  document.getElementById("boss-bar").style.width = Math.max(bossHP,0)/bosses[currentBoss].hp*100 + "%";
+  document.getElementById("player-bar").style.width = Math.max(playerHP,0)/30*100 + "%";
+  document.getElementById("player-hp-text").textContent = playerHP;
+}
+
+function loadBoss() {
+  const boss = bosses[currentBoss];
+  bossHP = boss.hp;
+  currentQuestionIndex = 0;
+  document.getElementById("boss-name").textContent = "Boss: " + boss.name;
+  updateBars();
+  loadBattleQuestion();
+}
+
+function loadBattleQuestion() {
+  const boss = bosses[currentBoss];
+  if(currentQuestionIndex >= boss.questions.length) currentQuestionIndex = 0;
+  document.getElementById("battle-question").textContent = boss.questions[currentQuestionIndex].q;
+  document.getElementById("battle-answer").value = "";
+  document.getElementById("battle-feedback").textContent = "";
+}
+
+function flashEffect(element,color) {
+  element.style.background = color;
+  setTimeout(()=>element.style.background="",200);
+}
+
+function submitBattleAnswer() {
+  const input = parseFloat(document.getElementById("battle-answer").value.trim());
+  const boss = bosses[currentBoss];
+  const correct = boss.questions[currentQuestionIndex].a;
+
+  if(Math.abs(input - correct) < 0.001) {
+    const damage = Math.floor(Math.random() * 10 + 5);
+    bossHP -= damage;
+    score += damage;
+    flashEffect(document.getElementById("boss-bar"),"#ff4c4c");
+    document.getElementById("battle-feedback").textContent = `✅ Correct! You dealt ${damage} damage.`;
+  } else {
+    const damageTaken = Math.floor(Math.random() * 5 + 3);
+    playerHP -= damageTaken;
+    flashEffect(document.getElementById("player-bar"),"#4cff4c");
+    document.getElementById("battle-feedback").textContent = `❌ Wrong! The boss hits you for ${damageTaken} damage.`;
+  }
+
+  updateBars();
+  document.getElementById("battle-score").textContent = "Score: " + score;
+
+  if(playerHP <= 0) {
+    document.getElementById("battle-question").textContent = "💀 You were defeated! Game Over!";
+    document.getElementById("battle-answer").style.display = "none";
+  } else if(bossHP <= 0) {
+    currentBoss++;
+    if(currentBoss >= bosses.length) {
+      document.getElementById("battle-question").textContent = "🎉 All bosses defeated! You win!";
+      document.getElementById("battle-answer").style.display = "none";
+    } else {
+      document.getElementById("battle-feedback").textContent = "🏆 Boss defeated! Prepare for the next boss!";
+      setTimeout(loadBoss, 1000);
+    }
+  } else {
+    currentQuestionIndex++;
+    setTimeout(loadBattleQuestion, 800);
+  }
+}
+
+window.onload = loadBoss;
+</script>
+
+</body>
+</html>

@@ -29,6 +29,11 @@
       display: flex;
       justify-content: center;
     }
+    .quiz2 {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+    }
 
     .quizbutton button {
       background: linear-gradient(to right, #18bc9c, #2c3e50);
@@ -42,14 +47,32 @@
       transition: all 0.3s ease;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
     }
-
+.quiz2 button {
+      background: linear-gradient(to right, #18bc9c, #2c3e50);
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      color: white;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    }
     .quizbutton button:hover {
       background: linear-gradient(to right, #1abc9c, #34495e);
       transform: translateY(-2px);
     }
-
+.quiz2 button:hover {
+      background: linear-gradient(to right, #1abc9c, #34495e);
+      transform: translateY(-2px);
+    }
     .quizbutton a {
       color: white;
+      text-decoration: none;
+    }
+    .quiz2 a{
+  color: white;
       text-decoration: none;
     }
 
@@ -84,7 +107,12 @@
 
     <div class="quizbutton">
       <button>
-        <a href="Geometric mean quiz.html">Take a fun game-like quiz!</a>
+        <a href="Geometric mean quiz.html">Take a fun adaptive quiz!</a>
+      </button>
+    </div>
+    <div class="quiz2">
+      <button>
+        <a href="Geometric Mean Quiz 2.html">Special mode: Flash round!</a>
       </button>
     </div>
   </main>

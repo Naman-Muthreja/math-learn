@@ -2,118 +2,344 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Geometric Mean Quiz</title>
-  <link rel="stylesheet" href="GeometricMeanQuiz.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Geometric Mean Shooting Game</title>
   <style>
     body {
-      background-color: #f7f9fa;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #2c3e50;
+      background: linear-gradient(135deg, #f0f9ff, #cbebff);
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     .header {
+      background-color: #18bc9c;
+      color: white;
       width: 100%;
-      padding: 20px;
-      background: linear-gradient(to right, #e0f7f4, #18bc9c);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      padding: 20px 0;
       text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
-    .header h1 {
-      margin: 0;
-      color: #ffffff;
-      font-size: 28px;
+    #game-canvas {
+      margin-top: 30px;
+      border: 3px solid #18bc9c;
+      border-radius: 10px;
+      background-color: #ffffff;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
     #quiz-container {
-      max-width: 600px;
-      width: 90%;
-      background-color: #ffffff;
-      padding: 30px;
+      margin-top: 25px;
+      padding: 20px;
+      background: white;
       border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      margin-top: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
     }
 
     .question {
-      font-size: 20px;
+      font-size: 1.2rem;
       margin-bottom: 15px;
+      color: #2c3e50;
     }
 
-    #answer-input {
+    input[type="text"] {
       padding: 10px;
-      width: 100%;
-      font-size: 16px;
-      border: 1px solid #ccc;
+      width: 80%;
+      font-size: 1rem;
+      border: 2px solid #ccc;
       border-radius: 6px;
+      margin-bottom: 10px;
+      transition: border-color 0.3s ease;
     }
 
-    #submit-btn, #restart-btn {
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background: linear-gradient(to right, #18bc9c, #2c3e50);
+    input[type="text"]:focus {
+      border-color: #18bc9c;
+      outline: none;
+    }
+
+    button {
+      background-color: #18bc9c;
       color: white;
       border: none;
-      border-radius: 8px;
+      padding: 10px 16px;
+      margin: 6px;
+      font-size: 1rem;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background-color 0.3s ease;
     }
 
-    #submit-btn:hover, #restart-btn:hover {
-      background: linear-gradient(to right, #1abc9c, #34495e);
-    }
-
-    #feedback {
-      margin-top: 15px;
-      font-weight: 500;
-    }
-
-    #score-section {
-      margin-top: 30px;
-      font-size: 22px;
-      color: #18bc9c;
+    button:hover {
+      background-color: #149c82;
     }
 
     .root-button {
-      margin-top: 10px;
-      background-color: #18bc9c;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
+      background-color: #2c3e50;
+      margin-left: 6px;
+    }
+
+    .root-button:hover {
+      background-color: #1a242f;
+    }
+
+    #feedback {
+      margin-top: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    #score-section {
+      margin-top: 16px;
+      font-size: 1.2rem;
+      color: #34495e;
+    }
+
+    .flash-correct {
+      animation: flashGreen 0.5s;
+    }
+
+    .flash-incorrect {
+      animation: flashRed 0.5s;
+    }
+
+    @keyframes flashGreen {
+      from { background-color: #d4edda; }
+      to { background-color: white; }
+    }
+
+    @keyframes flashRed {
+      from { background-color: #f8d7da; }
+      to { background-color: white; }
     }
 
     #loading {
-      padding: 20px;
-      font-size: 18px;
+      margin-top: 50px;
+      font-size: 1.5rem;
       color: #888;
     }
-  </style>
-  <script>
-    let score = 0;
-    let questionCount = 0;
-    let difficulty = 'medium';
-    let correctAnswer = 0;
-    let quizOver = false;
 
-    function insertRoot() {
-      const input = document.getElementById("answer-input");
-      const start = input.selectionStart;
-      const end = input.selectionEnd;
-      input.value = input.value.slice(0, start) + "√" + input.value.slice(end);
-      input.setSelectionRange(start + 1, start + 1);
-      input.focus();
+    #review-section {
+      margin-top: 18px;
+      text-align: left;
+      display: none;
+      max-width: 420px;
+      width: 90%;
     }
 
+    #review-section ul {
+      padding-left: 18px;
+    }
+
+    #review-section li {
+      margin-bottom: 8px;
+      background: #fafafa;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #eee;
+    }
+
+    /* Whiteboard styles (ADDED) */
+    #whiteboard-container {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      width: 400px;
+      height: 300px;
+      background: white;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      display: none;
+      flex-direction: column;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    #whiteboard-canvas {
+      flex: 1;
+      background: #fff;
+      cursor: crosshair;
+      display: block;
+    }
+
+    .whiteboard-controls {
+      display: flex;
+      justify-content: space-between;
+      background: #f1f1f1;
+      padding: 6px;
+      border-top: 1px solid #ddd;
+    }
+
+    .whiteboard-controls button {
+      padding: 6px 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #eee;
+      color: #222;
+    }
+
+    .whiteboard-controls button:hover {
+      background: #ddd;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>🎯 Geometric Mean Adaptive Quiz</h1>
+  </div>
+
+  <canvas id="game-canvas" width="500" height="300"></canvas>
+
+  <div id="loading">Loading game...</div>
+
+  <div id="quiz-container" style="display: none;">
+    <div class="question" id="question-text"></div>
+    <input type="text" id="answer-input" placeholder="Type your answer here..." />
+    <button class="root-button" onclick="insertRoot()">√</button>
+
+    <!-- WHITEBOARD TOGGLE BUTTON (ADDED) -->
+    <button id="toggle-whiteboard">Whiteboard</button>
+
+    <div id="feedback"></div>
+    <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+    <button id="next-btn" style="display: none;" onclick="nextQuestion()">Next Question</button>
+    <div id="score-section"></div>
+    <button id="restart-btn" style="display: none;" onclick="restartQuiz()">Restart Quiz</button>
+
+    <!-- Review section (hidden until quiz over) -->
+    <div id="review-section"></div>
+  </div>
+
+  <!-- Whiteboard overlay (ADDED) -->
+  <div id="whiteboard-container" aria-hidden="true">
+    <canvas id="whiteboard-canvas"></canvas>
+    <div class="whiteboard-controls">
+      <button id="clear-whiteboard" type="button">Clear</button>
+      <div>
+        <button id="close-whiteboard" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Canvas & context
+    const canvas = document.getElementById("game-canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Target object (position, size, velocity)
+    const target = { x: 150, y: 100, radius: 25, dx: 2, dy: 1.5 };
+
+    // Game state
+    let score = 0;
+    let questionCount = 0;
+    let correctAnswer = 0;
+    let quizOver = false;
+    let questionActive = false;
+    let difficulty = "medium"; // easy | medium | hard
+    let animationFrameId;
+
+    // Review data for review mode
+    let reviewData = []; // each item: { a, b, correct, playerAnswer, result }
+
+    // Sounds
+    const correctSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_70c8392b25.mp3");
+    const incorrectSound = new Audio("https://cdn.pixabay.com/audio/2022/03/01/audio_a39b0b7d69.mp3");
+
+    // --- Initialization ---
+    document.addEventListener("DOMContentLoaded", () => {
+      drawTarget();
+      animate();
+      canvas.addEventListener("click", shootTarget);
+      document.getElementById("loading").style.display = "none";
+      // Ensure score section cleared
+      document.getElementById("score-section").textContent = "";
+      // show quiz container only after DOM ready
+      document.getElementById("quiz-container").style.display = "block";
+    });
+
+    // Draw the target
+    function drawTarget() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, target.radius, 0, 2 * Math.PI);
+      ctx.fillStyle = "#18bc9c";
+      ctx.fill();
+      ctx.strokeStyle = "#2c3e50";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    // Animation loop (only when not in question active and not quiz over)
+    function animate() {
+      // If a question is active or quiz over, stop the animation loop (do not request another frame)
+      if (quizOver || questionActive) return;
+
+      // Move target
+      target.x += target.dx;
+      target.y += target.dy;
+
+      // Bounce off edges
+      if (target.x + target.radius > canvas.width || target.x - target.radius < 0) {
+        target.dx *= -1;
+      }
+      if (target.y + target.radius > canvas.height || target.y - target.radius < 0) {
+        target.dy *= -1;
+      }
+
+      drawTarget();
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // When player clicks the canvas (try to shoot target)
+    function shootTarget(event) {
+      if (questionActive || quizOver) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      const dx = x - target.x;
+      const dy = y - target.y;
+
+      if (Math.sqrt(dx * dx + dy * dy) <= target.radius) {
+        // Stop the animation and show a question
+        cancelAnimationFrame(animationFrameId);
+        generateQuestion();
+      }
+    }
+
+    // Adjust target properties according to difficulty
+    function applyDifficultyToTarget() {
+      // Base values (you can tweak these)
+      if (difficulty === 'easy') {
+        target.radius = 32;
+        target.dx = 1.8;
+        target.dy = 1.2;
+      } else if (difficulty === 'medium') {
+        target.radius = 25;
+        target.dx = 2.8;
+        target.dy = 1.8;
+      } else { // hard
+        target.radius = 18;
+        target.dx = 4.0;
+        target.dy = 2.8;
+      }
+      // Keep the target moving direction while adjusting speed; ensure it doesn't get stuck
+      if (Math.abs(target.dx) < 0.5) target.dx = Math.sign(target.dx || 1) * 0.8;
+      if (Math.abs(target.dy) < 0.5) target.dy = Math.sign(target.dy || 1) * 0.8;
+    }
+
+    // Generate a question and show the quiz UI
     function generateQuestion() {
       let a, b;
       if (difficulty === 'easy') {
@@ -127,15 +353,43 @@
         b = Math.floor(Math.random() * 50 + 10);
       }
 
+      // Compute correct geometric mean (number)
       correctAnswer = Math.sqrt(a * b);
-      document.getElementById("question-text").innerHTML = `What is the geometric mean of <strong>${a}</strong> and <strong>${b}</strong>? <br><small>(Use √(a × b))</small>`;
+
+      // Show question
+      document.getElementById("question-text").innerHTML =
+        `What is the geometric mean of <strong>${a}</strong> and <strong>${b}</strong>? <br><small>(Use √(a × b))</small>`;
+      document.getElementById("answer-input").value = "";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("submit-btn").style.display = "inline-block";
+      document.getElementById("next-btn").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+
+      // mark question active and store for review
+      questionActive = true;
+      reviewData.push({ a, b, correct: correctAnswer, playerAnswer: null, result: null });
     }
 
-    function submitAnswer() {
-      if (quizOver) return;
+    // Helper to insert √ symbol into the input
+    function insertRoot() {
+      const input = document.getElementById("answer-input");
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      input.value = input.value.slice(0, start) + "√" + input.value.slice(end);
+      input.setSelectionRange(start + 1, start + 1);
+      input.focus();
+    }
 
-      const input = document.getElementById("answer-input").value.trim();
-      const parsed = input.replace(/√\s*(\d+(\.\d+)?)/g, (_, number) => Math.sqrt(parseFloat(number)));
+    // Submit answer handler
+    function submitAnswer() {
+      const inputRaw = document.getElementById("answer-input").value.trim();
+
+      // Accept numbers or expressions like "√25" or "√(25)" — basic support
+      // Replace occurrences of √NUMBER or √(NUMBER) with actual numeric value
+      const parsed = inputRaw.replace(/√\s*\(?\s*(\d+(\.\d+)?)\s*\)?/g, (_, number) => {
+        return Math.sqrt(parseFloat(number));
+      });
+
       const userAnswer = parseFloat(parsed);
 
       if (isNaN(userAnswer)) {
@@ -143,63 +397,215 @@
         return;
       }
 
-      const isCorrect = Math.abs(userAnswer - correctAnswer) < 0.1;
-      document.getElementById("feedback").textContent = isCorrect ? "✅ Correct!" : `❌ Incorrect. Answer was: ${correctAnswer.toFixed(2)}`;
+      const container = document.getElementById("quiz-container");
 
-      if (isCorrect) score++;
+      // Consider correct if within a small tolerance (0.1)
+      const isCorrect = Math.abs(userAnswer - correctAnswer) < 0.1;
+
+      // Update last reviewData entry
+      if (reviewData.length > 0) {
+        reviewData[reviewData.length - 1].playerAnswer = userAnswer;
+        reviewData[reviewData.length - 1].result = isCorrect;
+      }
+
+      if (isCorrect) {
+        document.getElementById("feedback").textContent = "✅ Correct!";
+        container.classList.remove("flash-incorrect");
+        container.classList.add("flash-correct");
+        try { correctSound.currentTime = 0; correctSound.play(); } catch(e){/*ignore*/ }
+        score++;
+      } else {
+        document.getElementById("feedback").textContent = `❌ Incorrect. Answer was: ${correctAnswer.toFixed(2)}`;
+        container.classList.remove("flash-correct");
+        container.classList.add("flash-incorrect");
+        try { incorrectSound.currentTime = 0; incorrectSound.play(); } catch(e){/*ignore*/ }
+      }
+
+      // Adjust difficulty based on performance (adaptive)
       if (isCorrect && difficulty === "easy") difficulty = "medium";
       else if (isCorrect && difficulty === "medium") difficulty = "hard";
       else if (!isCorrect && difficulty === "hard") difficulty = "medium";
       else if (!isCorrect && difficulty === "medium") difficulty = "easy";
+      // apply the difficulty to target for the next animated round
+      applyDifficultyToTarget();
 
       questionCount++;
 
+      document.getElementById("submit-btn").style.display = "none";
+      document.getElementById("next-btn").style.display = "inline-block";
+
+      // End of quiz condition (5 questions)
       if (questionCount >= 5) {
         quizOver = true;
         document.getElementById("score-section").textContent = `Final Score: ${score} / 5`;
         document.getElementById("submit-btn").disabled = true;
+        document.getElementById("next-btn").style.display = "none";
         document.getElementById("restart-btn").style.display = "inline-block";
+        if (score === 5) confetti(); // celebrate perfect score
+        showReview();
       } else {
-        generateQuestion();
-        document.getElementById("answer-input").value = "";
+        // Update score display (interim)
+        document.getElementById("score-section").textContent = `Score: ${score} / ${questionCount}`;
       }
+
+      // stop showing question as active until Next pressed
+      questionActive = false;
     }
 
+    // Next question: hide quiz UI and resume animation
+    function nextQuestion() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("feedback").textContent = "";
+      questionActive = false;
+
+      // resume animation loop
+      animate();
+    }
+
+    // Restart: reset all state and UI
     function restartQuiz() {
       score = 0;
       questionCount = 0;
       difficulty = "medium";
       quizOver = false;
+      questionActive = false;
+      reviewData = [];
+      correctAnswer = 0;
+
+      // Reset UI
       document.getElementById("score-section").textContent = "";
       document.getElementById("feedback").textContent = "";
       document.getElementById("submit-btn").disabled = false;
       document.getElementById("restart-btn").style.display = "none";
-      document.getElementById("answer-input").value = "";
-      generateQuestion();
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("review-section").style.display = "none";
+      document.getElementById("answer-input").style.display = "inline-block";
+
+      // Reset target and apply medium difficulty defaults
+      target.x = canvas.width / 2;
+      target.y = canvas.height / 2;
+      applyDifficultyToTarget();
+
+      // resume animation
+      animate();
     }
 
-    window.onload = function () {
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("quiz-container").style.display = "block";
-      generateQuestion();
+    // Build and show the review section after quiz ends
+    function showReview() {
+      const review = document.getElementById("review-section");
+      review.style.display = "block";
+
+      let html = `<h3>Review Questions</h3><ul>`;
+      reviewData.forEach((q, i) => {
+        const player = (q.playerAnswer === null) ? "No answer" : q.playerAnswer.toFixed(2);
+        const correct = q.correct.toFixed(2);
+        const mark = q.result ? "✅" : "❌";
+        html += `<li>
+                   <strong>Q${i+1}:</strong> geometric mean of ${q.a} and ${q.b} → Correct: ${correct}<br>
+                   Your answer: ${player} ${mark}
+                 </li>`;
+      });
+      html += `</ul>`;
+      review.innerHTML = html;
     }
+
+    // Ensure difficulty applied initially
+    applyDifficultyToTarget();
+
+    // -----------------------
+    // WHITEBOARD (ONLY ADDITION)
+    // -----------------------
+    (function() {
+      const whiteboardContainer = document.getElementById("whiteboard-container");
+      const whiteboardCanvas = document.getElementById("whiteboard-canvas");
+      const ctxWhiteboard = whiteboardCanvas.getContext("2d");
+      const toggleBtn = document.getElementById("toggle-whiteboard");
+      const closeBtn = document.getElementById("close-whiteboard");
+      const clearBtn = document.getElementById("clear-whiteboard");
+
+      function resizeWhiteboard() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const w = whiteboardContainer.clientWidth;
+        const h = Math.max(40, whiteboardContainer.clientHeight - 40); // reserve controls height
+        // Set CSS size
+        whiteboardCanvas.style.width = w + "px";
+        whiteboardCanvas.style.height = h + "px";
+        // Set actual pixel buffer size for crisp drawing
+        whiteboardCanvas.width = Math.floor(w * dpr);
+        whiteboardCanvas.height = Math.floor(h * dpr);
+        // Map drawing units to CSS pixels
+        ctxWhiteboard.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // default stroke style
+        ctxWhiteboard.lineWidth = 2;
+        ctxWhiteboard.lineCap = "round";
+        ctxWhiteboard.strokeStyle = "#000";
+      }
+      // initial resize
+      resizeWhiteboard();
+      window.addEventListener("resize", resizeWhiteboard);
+
+      // Drawing state
+      let drawing = false;
+      function getOffset(e) {
+        // For mouse events offsetX/offsetY correspond to CSS pixels (works with setTransform)
+        return { x: e.offsetX, y: e.offsetY };
+      }
+
+      whiteboardCanvas.addEventListener("mousedown", (e) => {
+        drawing = true;
+        const { x, y } = getOffset(e);
+        ctxWhiteboard.beginPath();
+        ctxWhiteboard.moveTo(x, y);
+      });
+      whiteboardCanvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+        const { x, y } = getOffset(e);
+        ctxWhiteboard.lineTo(x, y);
+        ctxWhiteboard.stroke();
+      });
+      whiteboardCanvas.addEventListener("mouseup", () => { drawing = false; });
+      whiteboardCanvas.addEventListener("mouseleave", () => { drawing = false; });
+
+      // Basic touch support
+      whiteboardCanvas.addEventListener("touchstart", (ev) => {
+        ev.preventDefault();
+        const touch = ev.touches[0];
+        const rect = whiteboardCanvas.getBoundingClientRect();
+        const x = (touch.clientX - rect.left);
+        const y = (touch.clientY - rect.top);
+        drawing = true;
+        ctxWhiteboard.beginPath();
+        ctxWhiteboard.moveTo(x, y);
+      }, { passive: false });
+      whiteboardCanvas.addEventListener("touchmove", (ev) => {
+        ev.preventDefault();
+        if (!drawing) return;
+        const touch = ev.touches[0];
+        const rect = whiteboardCanvas.getBoundingClientRect();
+        const x = (touch.clientX - rect.left);
+        const y = (touch.clientY - rect.top);
+        ctxWhiteboard.lineTo(x, y);
+        ctxWhiteboard.stroke();
+      }, { passive: false });
+      whiteboardCanvas.addEventListener("touchend", () => { drawing = false; });
+
+      // Toggle / close / clear behaviors
+      toggleBtn.addEventListener("click", () => {
+        whiteboardContainer.style.display = "flex";
+        whiteboardContainer.setAttribute("aria-hidden", "false");
+        resizeWhiteboard();
+      });
+      closeBtn.addEventListener("click", () => {
+        whiteboardContainer.style.display = "none";
+        whiteboardContainer.setAttribute("aria-hidden", "true");
+      });
+      clearBtn.addEventListener("click", () => {
+        ctxWhiteboard.clearRect(0, 0, whiteboardCanvas.width, whiteboardCanvas.height);
+      });
+    })();
+    // -----------------------
+    // END WHITEBOARD
+    // -----------------------
   </script>
-</head>
-<body>
-  <div class="header">
-    <h1>Geometric Mean Quiz</h1>
-  </div>
-
-  <div id="loading">Loading quiz...</div>
-
-  <div id="quiz-container" style="display: none;">
-    <div class="question" id="question-text"></div>
-    <input type="text" id="answer-input" placeholder="Type your answer here..." />
-    <button class="root-button" onclick="insertRoot()">√</button>
-    <div id="feedback"></div>
-    <button id="submit-btn" onclick="submitAnswer()">Submit</button>
-    <div id="score-section"></div>
-    <button id="restart-btn" style="display: none;" onclick="restartQuiz()">Restart Quiz</button>
-  </div>
 </body>
 </html>
