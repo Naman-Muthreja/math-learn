@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="./scripts/firebase.js" defer type="module"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mathcelerate</title>
@@ -99,7 +100,10 @@
   <section class="hero">
     <h1>Mathcelerate</h1>
     <p>Boost your math skills with adaptive quizzes, flash rounds, and epic monster brawls!</p>
-    <a class="btn" href="google-signin.html">Sign in with Google</a>
+    <div class="btn">
+<button id="google-login-btn">Google Login </button>
+    </div>
+   
   </section>
 
   <section class="features">
@@ -112,7 +116,7 @@
       <p>Race against the clock and solve as many questions as you can in 60 seconds.</p>
     </div>
     <div class="feature-card">
-      <h3>Monster Brawl</h3>
-      <p>Fight epic bosses by solving equations. Epic visuals, epic challenges!</p>
+      <h3>Special Modes</h3>
+      <p>More Special Modes! Duel epic monsters in Monster brawl!</p>
     </div>
   </sec
