@@ -1,5 +1,24 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { app, auth } from "./firebase.js";
+import { doc, setDoc, getDoc, updateDoc, increment, arrayUnion, collection, addDoc} from 'firebase/firestore';
+import {auth, db} from './firebase-config';
+export const initializeUserProgress = async (user) => { 
+        const progressRef = doc(db, 'userProgress', user.uid); 
+        const progressDoc = await getDoc(progressRef); 
+        if (!progressDoc.exists()) { await setDoc(progressRef, { 
+        uid:user.displayName,
+        QuizCompletion: 0,
+        lastLoginDate: new Date(),
+        notifications:false,
+        totalTimeSpent: 0,
+        });  
+    } else {
+        await updateDoc(progressRef, {
+            lastLoginDate: new Date(),
+        });
+    }
+};
+
 
 function updateUserProfile(user){
     const nameElement = document.getElementById("user-name");
@@ -17,6 +36,13 @@ function updateUserProfile(user){
         }
     }
 }
+const userProgressStructure={
+    uid:user.displayName,
+    QuizCompletion: null,
+    streakCount: null,
+    notifications:false,
+    totalTimeSpent: null,
+};
 
 onAuthStateChanged(auth, (user) => {
     if (user) {

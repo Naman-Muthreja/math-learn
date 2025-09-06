@@ -29,6 +29,8 @@
     .whiteboard-controls button:hover { background: #ddd; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+
 </head>
 <body>
   <div class="header">
@@ -57,7 +59,8 @@
     </div>
   </div>
 
-<script>
+<script >
+// import { SetScore } from "./Scripts/todo.js"
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
 const target = { x: 150, y: 100, radius: 25, dx: 2, dy: 1.5 };
@@ -78,7 +81,7 @@ const easyQuestions = [
 
 const mediumQuestions = [
   { question: "Solve: 5x + 9 = 109", answer: 20 },
-  { question: "Solve: 7x + 9 = 58", answer: 9 },
+  { question: "Solve: 7x + 9 = 58", answer: 7 },
   { question: "Solve: 5x + 15 = 225", answer: 42 },
   { question: "Solve: 40x + 60 = 180", answer: 3 }
 ];

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🎯 Quadratic Formula Adaptive Quiz</title>
+<style>
+/* --- styles unchanged --- */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f0f9ff, #cbebff); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh;}
+.header { background-color: #18bc9c; color: white; width: 100%; padding: 20px 0; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);}
+#game-canvas { margin-top: 30px; border: 3px solid #18bc9c; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);}
+#quiz-container { margin-top: 25px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); width: 90%; max-width: 420px; text-align: center;}
+.question { font-size: 1.2rem; margin-bottom: 15px; color: #2c3e50;}
+input[type="text"] { padding: 10px; width: 80%; font-size: 1rem; border: 2px solid #ccc; border-radius: 6px; margin-bottom: 10px;}
+button { background-color: #18bc9c; color: white; border: none; padding: 10px 16px; margin: 6px; font-size: 1rem; border-radius: 6px; cursor: pointer;}
+button:hover { background-color: #149c82; }
+#feedback { margin-top: 12px; font-size: 1.1rem; font-weight: bold;}
+#score-section { margin-top: 16px; font-size: 1.2rem; color: #34495e;}
+.flash-correct { animation: flashGreen 0.5s; }
+.flash-incorrect { animation: flashRed 0.5s; }
+@keyframes flashGreen { from { background-color: #d4edda; } to { background-color: white; } }
+@keyframes flashRed { from { background-color: #f8d7da; } to { background-color: white; } }
+#review-section { margin-top: 18px; text-align: left; display: none; max-width: 420px; width: 90%;}
+#review-section li { margin-bottom: 8px; background: #fafafa; padding: 8px; border-radius: 6px; border: 1px solid #eee;}
+#whiteboard-container { position: fixed; top: 60px; right: 20px; width: 400px; height: 300px; background: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); display: none; flex-direction: column; z-index: 9999; overflow: hidden;}
+#whiteboard-canvas { flex: 1; background: #fff; cursor: crosshair; display: block;}
+.whiteboard-controls { display: flex; justify-content: space-between; background: #f1f1f1; padding: 6px; border-top: 1px solid #ddd;}
+.whiteboard-controls button { padding: 6px 8px; border: none; border-radius: 4px; cursor: pointer; background: #eee; color: #222;}
+.whiteboard-controls button:hover { background: #ddd; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div class="header">
+<h1>🎯 Quadratic Formula Adaptive Quiz</h1>
+</div>
+
+<canvas id="game-canvas" width="500" height="300"></canvas>
+<div id="quiz-container" style="display: none;">
+  <div class="question" id="question-text"></div>
+  <input type="text" id="answer-x" placeholder="Root 1(First X value):" />
+  <input type="text" id="answer-y" placeholder="Root 2(Second X value):" />
+  <button id="toggle-whiteboard">Whiteboard</button>
+  <div id="feedback"></div>
+  <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+  <button id="next-btn" style="display: none;" onclick="nextQuestion()">Next Question</button>
+  <div id="score-section"></div>
+  <button id="restart-btn" style="display: none;" onclick="restartQuiz()">Restart Quiz</button>
+  <div id="review-section"></div>
+</div>
+
+<!-- Whiteboard overlay -->
+<div id="whiteboard-container">
+  <canvas id="whiteboard-canvas"></canvas>
+  <div class="whiteboard-controls">
+    <button id="clear-whiteboard" type="button">Clear</button>
+    <button id="close-whiteboard" type="button">Close</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+const target = { x: 150, y: 100, radius: 25, dx: 2, dy: 1.5 };
+let score = 0, questionCount = 0, correctAnswer = {}, quizOver = false, questionActive = false;
+let difficulty = "medium";
+let animationFrameId;
+let reviewData = [];
+
+
+// ---------------------
+// QUADRATIC FORMULA QUESTION POOLS
+// ---------------------
+
+// Easy = simple quadratics with integer roots
+const easyQuestions = [
+  { question: "Solve: x² - 5x + 6 = 0", answer: {x: 2, y: 3} },
+  { question: "Solve: x² - 7x + 10 = 0", answer: {x: 2, y: 5} },
+  { question: "Solve: x² - 9x + 20 = 0", answer: {x: 4, y: 5} },
+  { question: "Solve: x² - 11x + 28 = 0", answer: {x: 4, y: 7} },
+  { question: "Solve: x² - 12x + 35 = 0", answer: {x: 5, y: 7} },
+  { question: "Solve: x² - 15x + 56 = 0", answer: {x: 7, y: 8} },
+  { question: "Solve: x² - 8x + 15 = 0", answer: {x: 3, y: 5} },
+  { question: "Solve: x² - 6x + 8 = 0", answer: {x: 2, y: 4} }
+];
+
+// Medium = quadratic roots with **fractions**
+const mediumQuestions = [
+  { question: "Solve: 2x² - 5x + 2 = 0", answer: {x: "1/2", y: "2"} },
+  { question: "Solve: 3x² - 7x + 2 = 0", answer: {x: "1/3", y: "2"} },
+  { question: "Solve: 4x² - 12x + 5 = 0", answer: {x: "1/2", y: "5/2"} },
+  { question: "Solve: 5x² - 6x + 1 = 0", answer: {x: "1/5", y: "1"} },
+  { question: "Solve: 2x² - 7x + 3 = 0", answer: {x: "1/2", y: "3"} },
+  { question: "Solve: 6x² - 7x - 3 = 0", answer: {x: "-1/3", y: "3/2"} },
+  { question: "Solve: 3x² - 10x + 7 = 0", answer: {x: "1", y: "7/3"} },
+  { question: "Solve: 2x² - 3x - 2 = 0", answer: {x: "-1/2", y: "2"} }
+];
+
+// Hard = larger integers or messy fractions
+const hardQuestions = [
+  { question: "Solve: x² - 13x + 40 = 0", answer: {x: 5, y: 8} },
+  { question: "Solve: 2x² - 17x + 35 = 0", answer: {x: "7/2", y: "5"} },
+  { question: "Solve: 3x² - 14x + 8 = 0", answer: {x: "2/3", y: "4"} },
+  { question: "Solve: 6x² - 19x + 10 = 0", answer: {x: "2/3", y: "5/2"} },
+  { question: "Solve: 4x² - 17x + 15 = 0", answer: {x: "3/4", y: "5"} },
+  { question: "Solve: 5x² - 23x + 18 = 0", answer: {x: "2/5", y: "18/5"} },
+  { question: "Solve: 7x² - 29x + 20 = 0", answer: {x: "4/7", y: "5"} },
+  { question: "Solve: 3x² - 11x + 10 = 0", answer: {x: 1, y: "10/3"} }
+];
+
+
+// ---------------------
+// Target + Animation
+// ---------------------
+document.addEventListener("DOMContentLoaded", () => {
+  drawTarget(); animate();
+  canvas.addEventListener("click", shootTarget);
+});
+function drawTarget() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, target.radius, 0, 2 * Math.PI);
+  ctx.fillStyle = "#18bc9c"; ctx.fill();
+  ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 3; ctx.stroke();
+}
+function animate() {
+  if (quizOver || questionActive) return;
+  target.x += target.dx; target.y += target.dy;
+  if (target.x+target.radius>canvas.width||target.x-target.radius<0) target.dx*=-1;
+  if (target.y+target.radius>canvas.height||target.y-target.radius<0) target.dy*=-1;
+  drawTarget(); animationFrameId=requestAnimationFrame(animate);
+}
+function shootTarget(e) {
+  if (questionActive||quizOver) return;
+  const rect=canvas.getBoundingClientRect(), x=e.clientX-rect.left, y=e.clientY-rect.top;
+  if (Math.hypot(x-target.x,y-target.y)<=target.radius){ cancelAnimationFrame(animationFrameId); generateQuestion(); }
+}
+function applyDifficultyToTarget() {
+  if (difficulty==="easy"){ target.radius=32; target.dx=1.8; target.dy=1.2;}
+  else if (difficulty==="medium"){ target.radius=25; target.dx=2.8; target.dy=1.8;}
+  else { target.radius=18; target.dx=4.0; target.dy=2.8;}
+}
+
+// ---------------------
+// Question + Answer Logic
+// ---------------------
+function generateQuestion(){
+  let qObj;
+  if (difficulty==="easy") qObj = easyQuestions[Math.floor(Math.random()*easyQuestions.length)];
+  else if (difficulty==="medium") qObj = mediumQuestions[Math.floor(Math.random()*mediumQuestions.length)];
+  else qObj = hardQuestions[Math.floor(Math.random()*hardQuestions.length)];
+  
+  correctAnswer = qObj.answer;
+  document.getElementById("question-text").innerHTML=qObj.question;
+  document.getElementById("answer-x").value=""; 
+  document.getElementById("answer-y").value=""; 
+  document.getElementById("feedback").textContent="";
+  document.getElementById("submit-btn").style.display="inline-block"; 
+  document.getElementById("next-btn").style.display="none";
+  document.getElementById("quiz-container").style.display="block";
+  questionActive=true;
+  reviewData.push({question:qObj.question,correct:correctAnswer,playerAnswer:null,result:null});
+}
+
+// Helper: parse fractions or decimals safely
+function parseNumber(value) {
+  if (value.includes("/")) {
+    let parts = value.split("/");
+    if (parts.length === 2) {
+      let num = parseFloat(parts[0]);
+      let den = parseFloat(parts[1]);
+      if (!isNaN(num) && !isNaN(den) && den !== 0) {
+        return num / den;
+      }
+    }
+  }
+  return parseFloat(value);
+}
+
+function submitAnswer(){
+  const xVal=parseNumber(document.getElementById("answer-x").value.trim());
+  const yVal=parseNumber(document.getElementById("answer-y").value.trim());
+  if(isNaN(xVal)||isNaN(yVal)){alert("Enter valid numbers for x and y (fractions allowed).");return;}
+  
+  const container=document.getElementById("quiz-container");
+  const tol = 0.001; // tolerance for decimal comparisons
+  const isCorrect =
+    (Math.abs(xVal - correctAnswer.x) < tol && Math.abs(yVal - correctAnswer.y) < tol) ||
+    (Math.abs(yVal - correctAnswer.x) < tol && Math.abs(xVal - correctAnswer.y) < tol);
+  
+  reviewData[reviewData.length-1].playerAnswer={x:xVal,y:yVal}; reviewData[reviewData.length-1].result=isCorrect;
+  
+  if(isCorrect){document.getElementById("feedback").textContent="✅ Correct!"; container.classList.add("flash-correct"); score++;}
+  else{document.getElementById("feedback").textContent=`❌ Incorrect. Answer was: x=${correctAnswer.x}, y=${correctAnswer.y}`; container.classList.add("flash-incorrect");}
+  
+  if(isCorrect&&difficulty==="easy")difficulty="medium";
+  else if(isCorrect&&difficulty==="medium")difficulty="hard";
+  else if(!isCorrect&&difficulty==="hard")difficulty="medium";
+  else if(!isCorrect&&difficulty==="medium")difficulty="easy";
+  applyDifficultyToTarget();
+  
+  questionCount++;
+  document.getElementById("submit-btn").style.display="none";
+  document.getElementById("next-btn").style.display="inline-block";
+  if(questionCount>=5){ quizOver=true; document.getElementById("score-section").textContent=`Final Score: ${score}/5`; document.getElementById("next-btn").style.display="none"; document.getElementById("restart-btn").style.display="inline-block"; if(score===5)confetti(); showReview();}
+  else{ document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;}
+  questionActive=false;
+}
+
+function nextQuestion(){ document.getElementById("quiz-container").style.display="none"; questionActive=false; animate(); }
+function restartQuiz(){ score=0;questionCount=0;difficulty="medium";quizOver=false;questionActive=false;reviewData=[];correctAnswer={};document.getElementById("score-section").textContent="";document.getElementById("feedback").textContent="";document.getElementById("submit-btn").disabled=false;document.getElementById("restart-btn").style.display="none";document.getElementById("quiz-container").style.display="none";document.getElementById("review-section").style.display="none";target.x=canvas.width/2;target.y=canvas.height/2;applyDifficultyToTarget();animate();}
+function showReview(){ let html="<h3>Review Questions</h3><ul>"; reviewData.forEach((q,i)=>{ const player=q.playerAnswer?`x=${q.playerAnswer.x}, y=${q.playerAnswer.y}`:"No answer"; const mark=q.result?"✅":"❌"; html+=`<li><strong>Q${i+1}:</strong> ${q.question}<br>Correct: x=${q.correct.x}, y=${q.correct.y} | Your answer: ${player} ${mark}</li>`; }); html+="</ul>"; document.getElementById("review-section").innerHTML=html; document.getElementById("review-section").style.display="block"; }
+applyDifficultyToTarget();
+
+// Whiteboard unchanged
+(function(){
+  const wbC=document.getElementById("whiteboard-container"), wb=document.getElementById("whiteboard-canvas"),ctxWb=wb.getContext("2d"),toggle=document.getElementById("toggle-whiteboard"),close=document.getElementById("close-whiteboard"),clear=document.getElementById("clear-whiteboard");
+  function resize(){const dpr=Math.max(1,window.devicePixelRatio||1);wb.width=wbC.clientWidth*dpr;wb.height=(wbC.clientHeight-40)*dpr;wb.style.width=wbC.clientWidth+"px";wb.style.height=(wbC.clientHeight-40)+"px";ctxWb.setTransform(dpr,0,0,dpr,0,0);ctxWb.lineWidth=2;ctxWb.lineCap="round";ctxWb.strokeStyle="#000";}
+  resize();window.addEventListener("resize",resize);
+  let drawing=false;
+  wb.addEventListener("mousedown",e=>{drawing=true;ctxWb.beginPath();ctxWb.moveTo(e.offsetX,e.offsetY);});
+  wb.addEventListener("mousemove",e=>{if(!drawing)return;ctxWb.lineTo(e.offsetX,e.offsetY);ctxWb.stroke();});
+  wb.addEventListener("mouseup",()=>drawing=false); wb.addEventListener("mouseleave",()=>drawing=false);
+  toggle.addEventListener("click",()=>{wbC.style.display="flex";resize();});
+  close.addEventListener("click",()=>wbC.style.display="none");
+  clear.addEventListener("click",()=>ctxWb.clearRect(0,0,wb.width,wb.height));
+})();
+</script>
+</body>
+</html>
