@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pythagorean Theorem Adaptive Quiz</title>
+<style>
+   
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f9ff, #cbebff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .header {
+    background-color: #18bc9c;
+    color: white;
+    width: 100%;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+  #game-canvas {
+    margin-top: 30px;
+    border: 3px solid #18bc9c;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  }
+  #quiz-container {
+    margin-top: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+  }
+  .question {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #2c3e50;
+  }
+  input[type="text"] {
+    padding: 10px;
+    width: 80%;
+    font-size: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  button {
+    background-color: #18bc9c;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    margin: 6px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background-color: #149c82; }
+  #feedback { margin-top: 12px; font-size: 1.1rem; font-weight: bold; }
+  #score-section { margin-top: 16px; font-size: 1.2rem; color: #34495e; }
+  .flash-correct { animation: flashGreen 0.5s; }
+  .flash-incorrect { animation: flashRed 0.5s; }
+  @keyframes flashGreen { from { background-color: #d4edda; } to { background-color: white; } }
+  @keyframes flashRed { from { background-color: #f8d7da; } to { background-color: white; } }
+  #review-section {
+    margin-top: 18px;
+    text-align: left;
+    display: none;
+    max-width: 420px;
+    width: 90%;
+  }
+  #review-section li {
+    margin-bottom: 8px;
+    background: #fafafa;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+  }
+  #whiteboard-container { margin: 10px 0; }
+  #whiteboard { border: 1px solid #ccc; border-radius:6px; cursor:crosshair; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div class="header">
+  <h1>📐 Pythagorean Theorem Adaptive Quiz</h1>
+</div>
+
+<canvas id="game-canvas" width="500" height="300"></canvas>
+<div id="quiz-container" style="display: none;">
+  <div class="question" id="question-text"></div>
+  <input type="text" id="answer-input" placeholder="Type your answer..." />
+
+  <!-- WHITEBOARD TOGGLE -->
+  <button id="open-whiteboard-btn" onclick="toggleWhiteboard()">🖌️ Open Whiteboard</button>
+  <div id="whiteboard-container" style="display:none;">
+    <canvas id="whiteboard" width="350" height="200"></canvas>
+    <br>
+    <button onclick="clearWhiteboard()">Clear Whiteboard</button>
+  </div>
+
+  <div id="feedback"></div>
+  <button id="submit-btn" onclick="submitAnswer()">Submit</button>
+  <button id="next-btn" style="display: none;" onclick="nextQuestion()">Next Question</button>
+  <div id="score-section"></div>
+  <button id="restart-btn" style="display: none;" onclick="restartQuiz()">Restart Quiz</button>
+  <div id="review-section"></div>
+</div>
+
+<script>
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+const target = { x: 150, y: 100, radius: 25, dx: 2, dy: 1.5 };
+let score = 0, questionCount = 0, correctAnswer = 0, quizOver = false, questionActive = false;
+let difficulty = "medium";
+let animationFrameId;
+let reviewData = [];
+
+// Question pools
+const easyQuestions = [
+  { question: "A right triangle has legs 3 and 4. Find the hypotenuse x.", answer: 5 },
+  { question: "A right triangle has legs 6 and 8. Find the hypotenuse x.", answer: 10 },
+  { question: "A right triangle has legs 5 and 12. Find the hypotenuse x.", answer: 13 },
+];
+const mediumQuestions = [
+  { question: "A right triangle has legs 9 and 12. Find the hypotenuse x.", answer: 15 },
+  { question: "A right triangle has legs 8 and 15. Find the hypotenuse x.", answer: 17 },
+  { question: "A right triangle has legs 12 and 16. Find the hypotenuse x.", answer: 20 },
+];
+const hardQuestions = [
+  { question: "A right triangle has legs 15 and 20. Find the hypotenuse x.", answer: 25 },
+  { question: "A right triangle has legs 20 and 21. Find the hypotenuse x.", answer: 29 },
+  { question: "A right triangle has legs 18 and 24. Find the hypotenuse x.", answer: 30 },
+];
+
+document.addEventListener("DOMContentLoaded", () => {
+  drawTarget(); animate();
+  canvas.addEventListener("click", shootTarget);
+});
+
+// Moving target functions
+function drawTarget() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.arc(target.x, target.y, target.radius, 0, 2 * Math.PI);
+  ctx.fillStyle = "#18bc9c"; ctx.fill();
+  ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 3; ctx.stroke();
+}
+
+function animate() {
+  if (quizOver || questionActive) return;
+  target.x += target.dx; target.y += target.dy;
+  if (target.x + target.radius > canvas.width || target.x - target.radius < 0) target.dx *= -1;
+  if (target.y + target.radius > canvas.height || target.y - target.radius < 0) target.dy *= -1;
+  drawTarget(); animationFrameId = requestAnimationFrame(animate);
+}
+
+function shootTarget(e) {
+  if (questionActive || quizOver) return;
+  const rect = canvas.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top;
+  if (Math.hypot(x - target.x, y - target.y) <= target.radius) {
+    cancelAnimationFrame(animationFrameId); generateQuestion();
+  }
+}
+
+function applyDifficultyToTarget() {
+  if (difficulty === "easy") { target.radius = 32; target.dx = 1.8; target.dy = 1.2; }
+  else if (difficulty === "medium") { target.radius = 25; target.dx = 2.8; target.dy = 1.8; }
+  else { target.radius = 18; target.dx = 4; target.dy = 2.8; }
+}
+
+// Questions
+function getQuestion() {
+  let pool;
+  if (difficulty === "easy") pool = easyQuestions;
+  else if (difficulty === "medium") pool = mediumQuestions;
+  else pool = hardQuestions;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function generateQuestion() {
+  const q = getQuestion();
+  correctAnswer = q.answer;
+  document.getElementById("question-text").innerHTML = q.question;
+  document.getElementById("answer-input").value = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("submit-btn").style.display = "inline-block";
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("quiz-container").style.display = "block";
+  questionActive = true;
+  reviewData.push({ question: q.question, correct: correctAnswer, playerAnswer: null, result: null });
+  clearWhiteboard(); // clear board for new question
+}
+
+function submitAnswer() {
+  const inputVal = parseFloat(document.getElementById("answer-input").value.trim());
+  if (isNaN(inputVal)) { alert("Enter a valid number."); return; }
+  const container = document.getElementById("quiz-container");
+  const isCorrect = Math.abs(inputVal - correctAnswer) < 0.001;
+  reviewData[reviewData.length - 1].playerAnswer = inputVal;
+  reviewData[reviewData.length - 1].result = isCorrect;
+
+  if (isCorrect) {
+    document.getElementById("feedback").textContent = "✅ Correct!";
+    container.classList.add("flash-correct");
+    score++;
+  } else {
+    document.getElementById("feedback").textContent = `❌ Incorrect. Correct answer: ${correctAnswer}`;
+    container.classList.add("flash-incorrect");
+  }
+
+  if (isCorrect && difficulty === "easy") difficulty = "medium";
+  else if (isCorrect && difficulty === "medium") difficulty = "hard";
+  else if (!isCorrect && difficulty === "hard") difficulty = "medium";
+  else if (!isCorrect && difficulty === "medium") difficulty = "easy";
+
+  applyDifficultyToTarget();
+  questionCount++;
+  document.getElementById("submit-btn").style.display = "none";
+  document.getElementById("next-btn").style.display = "inline-block";
+
+  if (questionCount >= 5) {
+    quizOver = true;
+    document.getElementById("score-section").textContent = `Final Score: ${score}/5`;
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("restart-btn").style.display = "inline-block";
+    if (score === 5) confetti();
+    showReview();
+  } else {
+    document.getElementById("score-section").textContent = `Score: ${score}/${questionCount}`;
+  }
+  questionActive = false;
+}
+
+function nextQuestion() {
+  document.getElementById("quiz-container").style.display = "none";
+  questionActive = false;
+  animate();
+}
+
+function restartQuiz() {
+  score = 0; questionCount = 0; difficulty = "medium"; quizOver = false; questionActive = false;
+  reviewData = []; correctAnswer = 0;
+  document.getElementById("score-section").textContent = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("submit-btn").disabled = false;
+  document.getElementById("restart-btn").style.display = "none";
+  document.getElementById("quiz-container").style.display = "none";
+  document.getElementById("review-section").style.display = "none";
+  clearWhiteboard();
+  animate();
+}
+
+function showReview() {
+  const reviewEl = document.getElementById("review-section");
+  reviewEl.innerHTML = "<h3>Review Your Answers:</h3><ul>" +
+    reviewData.map(d => `<li>${d.question} | Your answer: ${d.playerAnswer} | ${d.result ? "✅" : "❌"} (Correct: ${d.correct})</li>`).join("") +
+    "</ul>";
+  reviewEl.style.display = "block";
+}
+
+// WHITEBOARD FUNCTIONS
+function toggleWhiteboard() {
+  const container = document.getElementById("whiteboard-container");
+  container.style.display = container.style.display === "none" ? "block" : "none";
+}
+
+const whiteboard = document.getElementById("whiteboard");
+const wbCtx = whiteboard.getContext("2d");
+let drawing = false;
+whiteboard.addEventListener("mousedown", e => { drawing = true; wbCtx.beginPath(); wbCtx.moveTo(e.offsetX, e.offsetY); });
+whiteboard.addEventListener("mousemove", e => { if(drawing) { wbCtx.lineTo(e.offsetX, e.offsetY); wbCtx.stroke(); } });
+whiteboard.addEventListener("mouseup", () => { drawing = false; });
+whiteboard.addEventListener("mouseout", () => { drawing = false; });
+function clearWhiteboard() { wbCtx.clearRect(0, 0, whiteboard.width, whiteboard.height); }
+</script>
+</body>
+</html>
