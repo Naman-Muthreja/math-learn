@@ -84,6 +84,45 @@
     border-radius: 6px;
     border: 1px solid #eee;
   }
+
+  /* Whiteboard */
+  #whiteboard-container {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    width: 400px;
+    height: 300px;
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+  }
+  #whiteboard-canvas {
+    flex: 1;
+    background: #fff;
+    cursor: crosshair;
+    display: block;
+  }
+  .whiteboard-controls {
+    display: flex;
+    justify-content: space-between;
+    background: #f1f1f1;
+    padding: 6px;
+    border-top: 1px solid #ddd;
+  }
+  .whiteboard-controls button {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #eee;
+    color: #222;
+  }
+  .whiteboard-controls button:hover { background: #ddd; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -96,12 +135,22 @@
   <div id="quiz-container" style="display: none;">
     <div class="question" id="question-text"></div>
     <input type="text" id="answer-input" placeholder="Type your answer..." />
+    <button id="toggle-whiteboard">Whiteboard</button>
     <div id="feedback"></div>
     <button id="submit-btn" onclick="submitAnswer()">Submit</button>
     <button id="next-btn" style="display: none;" onclick="nextQuestion()">Next Question</button>
     <div id="score-section"></div>
     <button id="restart-btn" style="display: none;" onclick="restartQuiz()">Restart Quiz</button>
     <div id="review-section"></div>
+  </div>
+
+  <!-- Whiteboard overlay -->
+  <div id="whiteboard-container">
+    <canvas id="whiteboard-canvas"></canvas>
+    <div class="whiteboard-controls">
+      <button id="clear-whiteboard" type="button">Clear</button>
+      <button id="close-whiteboard" type="button">Close</button>
+    </div>
   </div>
 
 <script>
@@ -196,6 +245,34 @@ function restartQuiz(){ score=0;questionCount=0;difficulty="medium";quizOver=fal
 function showReview(){
   const reviewEl=document.getElementById("review-section"); reviewEl.innerHTML="<h3>Review Your Answers:</h3><ul>"+reviewData.map(d=>`<li>${d.question} | Your answer: ${d.playerAnswer} | ${d.result?"✅":"❌"}</li>`).join("")+"</ul>"; reviewEl.style.display="block";
 }
+
+// Whiteboard
+(function(){
+  const wbC=document.getElementById("whiteboard-container"),
+        wb=document.getElementById("whiteboard-canvas"),
+        ctxWb=wb.getContext("2d"),
+        toggle=document.getElementById("toggle-whiteboard"),
+        close=document.getElementById("close-whiteboard"),
+        clear=document.getElementById("clear-whiteboard");
+  function resize(){
+    const dpr=Math.max(1,window.devicePixelRatio||1);
+    wb.width=wbC.clientWidth*dpr;
+    wb.height=(wbC.clientHeight-40)*dpr;
+    wb.style.width=wbC.clientWidth+"px";
+    wb.style.height=(wbC.clientHeight-40)+"px";
+    ctxWb.setTransform(dpr,0,0,dpr,0,0);
+    ctxWb.lineWidth=2; ctxWb.lineCap="round"; ctxWb.strokeStyle="#000";
+  }
+  resize(); window.addEventListener("resize",resize);
+  let drawing=false;
+  wb.addEventListener("mousedown",e=>{drawing=true;ctxWb.beginPath();ctxWb.moveTo(e.offsetX,e.offsetY);});
+  wb.addEventListener("mousemove",e=>{if(!drawing)return;ctxWb.lineTo(e.offsetX,e.offsetY);ctxWb.stroke();});
+  wb.addEventListener("mouseup",()=>drawing=false);
+  wb.addEventListener("mouseleave",()=>drawing=false);
+  toggle.addEventListener("click",()=>{wbC.style.display="flex";resize();});
+  close.addEventListener("click",()=>wbC.style.display="none");
+  clear.addEventListener("click",()=>ctxWb.clearRect(0,0,wb.width,wb.height));
+})();
 </script>
 </body>
 </html>

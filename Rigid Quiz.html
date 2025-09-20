@@ -92,11 +92,14 @@
     display: none;
     margin-top: 15px;
     border: 2px solid #18bc9c;
-    position: relative;
+    border-radius: 8px;
+    padding: 8px;
+    background: #fff;
   }
   #whiteboard {
     background: white;
     cursor: crosshair;
+    display: block;
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -116,6 +119,7 @@
   <button id="whiteboard-btn" onclick="toggleWhiteboard()">Open Whiteboard</button>
   <div id="whiteboard-container">
     <canvas id="whiteboard" width="400" height="300"></canvas>
+    <br/>
     <button onclick="clearWhiteboard()">Clear</button>
   </div>
   <div id="score-section"></div>
@@ -132,8 +136,7 @@ let difficulty="medium";
 let animationFrameId;
 let reviewData=[];
 
-// Question pools - Only Translations
-// Question pools - Only Translations using "units right/left, up/down"
+// ---------------- Question pools ----------------
 const easyQuestions = [
   { question: "Translate point (2,3) 1 unit right, 2 units up.", answer: "(3,5)" },
   { question: "Translate point (0,0) 3 units right, 4 units up.", answer: "(3,4)" },
@@ -141,7 +144,6 @@ const easyQuestions = [
   { question: "Translate point (4,1) 2 units left, 1 unit up.", answer: "(2,2)" },
   { question: "Translate point (-2,-1) 1 unit right, 3 units up.", answer: "(-1,2)" }
 ];
-
 const mediumQuestions = [
   { question: "Translate point (5,4) 2 units left, 3 units up.", answer: "(3,7)" },
   { question: "Translate point (-3,1) 4 units right, 2 units down.", answer: "(1,-1)" },
@@ -149,7 +151,6 @@ const mediumQuestions = [
   { question: "Translate point (2,3) 5 units right, 2 units down.", answer: "(7,1)" },
   { question: "Translate point (-4,0) 3 units right, 4 units up.", answer: "(-1,4)" }
 ];
-
 const hardQuestions = [
   { question: "Translate point (8,7) 5 units left, 3 units down.", answer: "(3,4)" },
   { question: "Translate point (-6,-2) 7 units right, 5 units up.", answer: "(1,3)" },
@@ -158,7 +159,7 @@ const hardQuestions = [
   { question: "Translate point (-3,7) 4 units right, 5 units down.", answer: "(1,2)" }
 ];
 
-
+// ---------------- Game ----------------
 document.addEventListener("DOMContentLoaded", ()=>{
   drawTarget(); animate();
   canvas.addEventListener("click", shootTarget);
@@ -265,17 +266,19 @@ function showReview(){
   reviewEl.style.display="block";
 }
 
-// ----- Old Whiteboard -----
-const wbBtn=document.getElementById("whiteboard-btn");
+// ---------------- Whiteboard ----------------
 const wbContainer=document.getElementById("whiteboard-container");
 const wbCanvas=document.getElementById("whiteboard");
 const wbCtx=wbCanvas.getContext("2d");
 let drawing=false;
 
-function toggleWhiteboard(){ wbContainer.style.display=wbContainer.style.display==="none"?"block":"none"; }
+function toggleWhiteboard(){ 
+  wbContainer.style.display=wbContainer.style.display==="none"?"block":"none"; 
+}
 
-wbCanvas.addEventListener("mousedown",()=>{drawing=true;});
-wbCanvas.addEventListener("mouseup",()=>{drawing=false; wbCtx.beginPath();});
+wbCanvas.addEventListener("mousedown",()=>{drawing=true; wbCtx.beginPath();});
+wbCanvas.addEventListener("mouseup",()=>{drawing=false;});
+wbCanvas.addEventListener("mouseleave",()=>{drawing=false;});
 wbCanvas.addEventListener("mousemove",(e)=>{
   if(!drawing) return;
   const rect=wbCanvas.getBoundingClientRect();

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Play - Quiz Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* General Styles */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    /* Updated to match Dashboard color scheme */
+    background: linear-gradient(135deg, #0a2f3d, #18bc9c);
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: auto;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  }
+
+  h2 {
+    margin-top: 50px;
+    font-size: 2rem;
+    color: #a6ffcb;
+    text-shadow: 1px 1px 6px rgba(0,0,0,0.4);
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 20px;
+  }
+
+  .step-card {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 15px;
+    width: 250px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .step-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  }
+
+  .step-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #00ffcc;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .start-btn {
+    display: inline-block;
+    margin-top: 40px;
+    padding: 15px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #0a2f3d;
+    background: #18bc9c;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .start-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  footer {
+    margin-top: 60px;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* Responsive */
+  @media(max-width: 600px){
+    .steps {
+      flex-direction: column;
+      align-items: center;
+    }
+    .step-card { width: 80%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎯 How to Play</h1>
+  <p>Welcome to Mathcelerate! After choosing a topic out of several options, your goal is to answer questions correctly by shooting moving targets. Your accuracy will determine your score. The game adapts to your level, getting harder or easier depending on your performance. Thanks for visiting the site. Have fun! -Naman</p>
+
+  <h2>Game Instructions</h2>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-icon">🖱️</div>
+      <h3>Click the Target</h3>
+      <p>Click on the moving target on the canvas to receive your question. Timing is key!</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">❓</div>
+      <h3>Answer the Question</h3>
+      <p>Once the question appears, type your answer in the input box. For fractions, equivalent answers like 1/6 or 6/36 are accepted.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">📈</div>
+      <h3>Adaptive Difficulty</h3>
+      <p>The game adapts! If you answer correctly, the questions get harder. If incorrect, the game adjusts to help you learn.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">🏆</div>
+      <h3>Track Your Score</h3>
+      <p>Your score is displayed after each question. At the end, review all your answers and see how well you did!</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-icon">📝</div>
+      <h3>Use the Whiteboard</h3>
+      <p>Click the whiteboard button to open a scratchpad. Work out calculations, draw diagrams, or plan your answers!</p>
+    </div>
+  </div>
+
+  <a href="Dashboard.html" class="start-btn">Start your journey 🚀</a>
+</div>
+
+</body>
+</html>

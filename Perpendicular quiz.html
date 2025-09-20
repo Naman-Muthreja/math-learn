@@ -100,7 +100,7 @@
   <input type="text" id="answer-input" placeholder="Enter equation (e.g., y=2x+3)" />
 
   <!-- WHITEBOARD TOGGLE -->
-  <button id="open-whiteboard-btn" onclick="toggleWhiteboard()">🖌️ Open Whiteboard</button>
+  <button id="open-whiteboard-btn" onclick="toggleWhiteboard()">Whiteboard</button>
   <div id="whiteboard-container" style="display:none;">
     <canvas id="whiteboard" width="350" height="200"></canvas>
     <br>
@@ -253,19 +253,37 @@ function toggleWhiteboard() {
   container.style.display = container.style.display === "none" ? "block" : "none";
 }
 
-// WHITEBOARD DRAWING LOGIC
+// WHITEBOARD DRAWING LOGIC (old correct version)
 const whiteboard = document.getElementById("whiteboard");
 const wbCtx = whiteboard.getContext("2d");
 let drawing = false;
 
-whiteboard.addEventListener("mousedown", e => { drawing = true; wbCtx.beginPath(); wbCtx.moveTo(e.offsetX, e.offsetY); });
-whiteboard.addEventListener("mousemove", e => { if(drawing) { wbCtx.lineTo(e.offsetX, e.offsetY); wbCtx.stroke(); } });
-whiteboard.addEventListener("mouseup", () => { drawing = false; });
-whiteboard.addEventListener("mouseout", () => { drawing = false; });
+whiteboard.addEventListener("mousedown", e => {
+  drawing = true;
+  wbCtx.beginPath();
+  wbCtx.moveTo(e.offsetX, e.offsetY);
+});
+
+whiteboard.addEventListener("mousemove", e => {
+  if (drawing) {
+    wbCtx.lineTo(e.offsetX, e.offsetY);
+    wbCtx.strokeStyle = "black";   // ink always black
+    wbCtx.lineWidth = 2;           // nice thickness
+    wbCtx.lineCap = "round";       // smooth strokes
+    wbCtx.stroke();
+    wbCtx.beginPath();
+    wbCtx.moveTo(e.offsetX, e.offsetY);
+  }
+});
+
+["mouseup", "mouseout"].forEach(evt =>
+  whiteboard.addEventListener(evt, () => { drawing = false; })
+);
 
 function clearWhiteboard() {
   wbCtx.clearRect(0, 0, whiteboard.width, whiteboard.height);
 }
+
 </script>
 </body>
 </html>
