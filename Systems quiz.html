@@ -70,26 +70,28 @@ let reviewData = [];
 // ---------------------
 // INTEGER ONLY QUESTION POOLS
 // ---------------------
-const easyQuestions = [
-  { question: "Solve system: x + y = 5, x - y = 1", answer: {x: 3, y: 2} },
-  { question: "Solve system: 2x + y = 8, x - y = 1", answer: {x: 3, y: 2} },
-  { question: "Solve system: x + 2y = 8, x - y = 2", answer: {x: 4, y: 2} },
-  { question: "Solve system: 3x + y = 10, x - y = 2", answer: {x: 3, y: 1} }
+const easyQuestions = [ 
+  { question: "Solve system: x + y = 5, 2x - y = 7", answer: {x: 4, y: 1} },   // (4,1)
+  { question: "Solve system: x + y = 7, 3x - y = 1", answer: {x: 2, y: 5} },   // (2,5)
+  { question: "Solve system: x + y = 3, 2x - y = -3", answer: {x: 0, y: 3} },  // (0,3)
+  { question: "Solve system: x + y = 1, 3x - y = -5", answer: {x: -1, y: 2} }  // (-1,2)
 ];
 
 const mediumQuestions = [
-  { question: "Solve system: 2x + 3y = 14, x - y = 2", answer: {x: 4, y: 2} },
-  { question: "Solve system: 3x + 4y = 17, x - y = 1", answer: {x: 3, y: 2} },
-  { question: "Solve system: 5x - 2y = 13, x + y = 4", answer: {x: 3, y: 1} },
-  { question: "Solve system: 4x + y = 11, 2x - y = 1", answer: {x: 2, y: 3} }
+  { question: "Solve system: x + 2y = 11, 3x - y = 19", answer: {x: 7, y: 2} },  // (7,2)
+  { question: "Solve system: 2x + y = 1, x - y = 2", answer: {x: 1, y: -1} },    // (1,-1)
+  { question: "Solve system: 3x + y = 19, x - 2y = -3", answer: {x: 5, y: 4} },  // (5,4)
+  { question: "Solve system: x + y = -1, 2x - 3y = -12", answer: {x: -3, y: 2} } // (-3,2)
 ];
 
 const hardQuestions = [
-  { question: "Solve system: 5x + 3y = 18, 2x - y = 5", answer: {x: 3, y: 1} },
-  { question: "Solve system: 6x - y = 16, 3x + 2y = 13", answer: {x: 3, y: 2} },
-  { question: "Solve system: 7x + 2y = 16, 3x - y = 5", answer: {x: 2, y: 1} },
-  { question: "Solve system: 8x - 3y = 21, 2x + y = 7", answer: {x: 3, y: 1} }
+  { question: "Solve system: 3x + y = -2, 5x - 2y = -18", answer: {x: -2, y: 4} }, // (-2,4)
+  { question: "Solve system: 4x + y = 11, 2x - 3y = 9", answer: {x: 3, y: -1} },   // (3,-1)
+  { question: "Solve system: x - y = 1, 2x + 3y = -8", answer: {x: -1, y: -2} },   // (-1,-2)
+  { question: "Solve system: x + y = 4, 3x - 2y = 27", answer: {x: 7, y: -3} }     // (7,-3)
 ];
+
+
 
 
 // ---------------------
@@ -161,9 +163,19 @@ function submitAnswer(){
   questionCount++;
   document.getElementById("submit-btn").style.display="none";
   document.getElementById("next-btn").style.display="inline-block";
-  if(questionCount>=5){ quizOver=true; document.getElementById("score-section").textContent=`Final Score: ${score}/5`; document.getElementById("next-btn").style.display="none"; document.getElementById("restart-btn").style.display="inline-block"; if(score===5)confetti(); showReview();}
-  else{ document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;}
+  if(questionCount>=5){
+    quizOver=true;
+    document.getElementById("score-section").textContent=`Final Score: ${score}/5`;
+    document.getElementById("next-btn").style.display="none";
+    document.getElementById("restart-btn").style.display="inline-block"; if(score===5)confetti();
+    showReview();
+    if (score >= 4){
+      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+      localStorage.setItem("QuizCompletion", QuizCompletion+1);
+    }
+  } else{ document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;}
   questionActive=false;
+  
 }
 
 function nextQuestion(){ document.getElementById("quiz-container").style.display="none"; questionActive=false; animate(); }

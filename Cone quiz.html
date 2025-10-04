@@ -224,6 +224,10 @@ function submitAnswer(){
     showReview();
   } else { document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;}
   questionActive=false;
+  if (score >= 4){
+      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+      localStorage.setItem("QuizCompletion", QuizCompletion+1);
+    }
 }
 
 function nextQuestion(){ document.getElementById("quiz-container").style.display="none"; questionActive=false; animate();}

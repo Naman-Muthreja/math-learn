@@ -171,6 +171,8 @@ function submitBattleAnswer() {
     currentBoss++;
     if(currentBoss >= bosses.length) {
       document.getElementById("battle-question").textContent = "🎉 All bosses defeated! You win!";
+      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+      localStorage.setItem("QuizCompletion", QuizCompletion+1);
       document.getElementById("battle-answer").style.display = "none";
     } else {
       document.getElementById("battle-feedback").textContent = "🏆 Boss defeated! Prepare for the next boss!";

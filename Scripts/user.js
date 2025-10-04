@@ -48,6 +48,8 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         updateUserProfile(user);
         const uid = user.uid;
+        localStorage.setItem("username", user.displayName);
+        localStorage.setItem("email", user.email);
         return uid;
     }
 })

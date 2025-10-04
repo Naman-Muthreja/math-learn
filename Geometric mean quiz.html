@@ -447,7 +447,10 @@
         // Update score display (interim)
         document.getElementById("score-section").textContent = `Score: ${score} / ${questionCount}`;
       }
-
+if (score >= 4){
+      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+      localStorage.setItem("QuizCompletion", QuizCompletion+1);
+    }
       // stop showing question as active until Next pressed
       questionActive = false;
     }

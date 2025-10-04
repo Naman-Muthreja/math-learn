@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -32,12 +32,30 @@ if (googleLogin) {
     try {
       await signInWithPopup(auth, provider);
       window.location.href = "Dashboard.html";
+      // Grab whatever the current login date was before overwriting
+      let lastLoginDate = localStorage.getItem("currentLoginDate");
+
+      // If there was a previous login, store it as "lastLoginDate"
+      if (lastLoginDate) {
+        localStorage.setItem("lastLoginDate", lastLoginDate);
+      }
+
+      localStorage.setItem("currentLoginDate", new Date());
+
+
     } catch (error) {
       console.error(error);
       alert("Login failed. Please try again.");
     }
   });
 }
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        localStorage.setItem("username", user.displayName);
+        localStorage.setItem("email", user.email);
+    }
+})
 
 
 

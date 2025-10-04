@@ -225,6 +225,10 @@ function submitAnswer(){
     if(score===5) confetti();
     showReview();
   } else { document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;}
+  if (score >= 4){
+      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+      localStorage.setItem("QuizCompletion", QuizCompletion+1);
+    }
   questionActive=false;
 }
 
