@@ -59,7 +59,6 @@
     transition: color 0.6s ease;
   }
 
-  /* 🎨 Theme Button */
   #theme-btn {
     position: fixed;
     top: 20px;
@@ -78,7 +77,6 @@
     transform: translateY(-2px);
   }
 
-  /* 🎨 Theme Modal */
   .theme-modal {
     position: fixed;
     top: 50%;
@@ -91,9 +89,7 @@
     text-align: center;
     z-index: 1000;
   }
-  .theme-modal.hidden {
-    display: none;
-  }
+  .theme-modal.hidden { display: none; }
   .theme-options button {
     margin: 8px;
     padding: 10px 16px;
@@ -107,7 +103,22 @@
     transform: scale(1.05);
   }
 
-  /* 🌌 Space star effect */
+  /* Locked theme */
+  .locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    position: relative;
+  }
+  .locked::after {
+    content: attr(data-locked-text);
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    color: red;
+  }
+
   .space-stars {
     position: fixed;
     top: 0;
@@ -118,20 +129,18 @@
     opacity: 0.3;
     z-index: -1;
     pointer-events: none;
+    display: none;
   }
 </style>
 </head>
 <body>
 <div class="header"><h1>User Statistics</h1></div>
 
-<!-- 🎨 Theme Button -->
 <button id="theme-btn">🎨 Themes</button>
 
-<!-- 🎨 Theme Selector Modal -->
 <div id="theme-selector" class="theme-modal hidden">
   <h3>Choose a Theme</h3>
   <div class="theme-options">
-    <button data-theme="original">🟢 Original</button>
     <button data-theme="purple">💜 Purple</button>
     <button data-theme="water">🌊 Water</button>
     <button data-theme="volcanic">🌋 Volcanic</button>
@@ -160,8 +169,7 @@
   </div>
 </div>
 
-<!-- optional star background -->
-<div class="space-stars" id="space-stars" style="display:none;"></div>
+<div class="space-stars" id="space-stars"></div>
 
 <script>
 function loadStats() {
@@ -174,106 +182,82 @@ function loadStats() {
   document.getElementById("email").textContent = email;
   document.getElementById("lastLogin").textContent = new Date(lastLoginDate).toLocaleString() || "Never";
   document.getElementById("quizCompletion").textContent = quizCompletion;
+  return quizCompletion;
 }
 
-// 🎨 THEME SYSTEM
+// Theme system
 const themeBtn = document.getElementById("theme-btn");
 const modal = document.getElementById("theme-selector");
 const themeButtons = document.querySelectorAll(".theme-options button");
 const starBg = document.getElementById("space-stars");
 
-themeBtn.addEventListener("click", () => {
-  modal.classList.toggle("hidden");
-});
+themeBtn.addEventListener("click", () => modal.classList.toggle("hidden"));
 
-// Define theme styles
-const themes = {
-  original: {
-    background: "linear-gradient(135deg,#f0f9ff,#cbebff)",
-    header: "#18bc9c",
-    card: "white",
-    text: "#2c3e50",
-    border: "#18bc9c"
-  },
-  purple: {
-    background: "linear-gradient(135deg, #3a0ca3, #7209b7)",
-    header: "#9d4edd",
-    card: "#f3e8ff",
-    text: "#3c096c",
-    border: "#7209b7"
-  },
-  water: {
-    background: "linear-gradient(135deg, #a2d9ff, #0077be)",
-    header: "#0099cc",
-    card: "#e0f7ff",
-    text: "#004466",
-    border: "#0099cc"
-  },
-  volcanic: {
-    background: "linear-gradient(135deg, #3b0a0a, #ff4500)",
-    header: "#ff6b3d",
-    card: "#fff0e0",
-    text: "#8b0000",
-    border: "#ff4500"
-  },
-  space: {
-    background: "radial-gradient(circle at top left, #000014, #050a30, #000014)",
-    header: "#000014",
-    card: "rgba(25, 25, 45, 0.85)",
-    text: "#45a29e",
-    border: "#00fcf1"
-  },
-  gold: {
-    background: "linear-gradient(135deg, #fff8dc, #ffd700)",
-    header: "#b8860b",
-    card: "#fffaf0",
-    text: "#b8860b",
-    border: "#daa520"
-  },
-  dark: {
-    background: "linear-gradient(135deg, #121212, #1e1e1e, #2c2c2c)",
-    header: "#222",
-    card: "#1a1a1a",
-    text: "#f5f5f5",
-    border: "#444"
-  }
+// Quiz unlock requirements
+const unlocks = {
+  purple: 1,
+  water: 2,
+  volcanic: 4,
+  space: 6,
+  gold: 8,
+  dark: 12
 };
 
-// Apply theme
+const themes = {
+  purple: { background: "linear-gradient(135deg, #3a0ca3, #7209b7)", header: "#9d4edd", card:"#f3e8ff", text:"#3c096c", border:"#7209b7" },
+  water: { background: "linear-gradient(135deg, #a2d9ff, #0077be)", header:"#0099cc", card:"#e0f7ff", text:"#004466", border:"#0099cc" },
+  volcanic: { background:"linear-gradient(135deg, #3b0a0a, #ff4500)", header:"#ff6b3d", card:"#fff0e0", text:"#8b0000", border:"#ff4500" },
+  space: { background:"radial-gradient(circle at top left, #000014, #050a30, #000014)", header:"#66fcf1", card:"rgba(25,25,45,0.85)", text:"#45a29e", border:"#66fcf1" },
+  gold: { background:"linear-gradient(135deg, #fff8dc, #ffd700)", header:"#b8860b", card:"#fffaf0", text:"#b8860b", border:"#daa520" },
+  dark: { background:"linear-gradient(135deg,#121212,#1e1e1e,#2c2c2c)", header:"#222", card:"#1a1a1a", text:"#f5f5f5", border:"#444" }
+};
+
 function applyTheme(name) {
   const t = themes[name];
-  if (!t) return;
+  if(!t) return;
   document.body.style.background = t.background;
   document.querySelector(".header").style.backgroundColor = t.header;
   document.querySelectorAll(".stat-card").forEach(card => {
     card.style.background = t.card;
     card.style.borderColor = t.border;
   });
-  document.querySelectorAll(".stat-card h2, .stat-card p").forEach(el => {
-    el.style.color = t.text;
-  });
+  document.querySelectorAll(".stat-card h2, .stat-card p").forEach(el => el.style.color = t.text);
 
-  // special space mode
-  if (name === "space") starBg.style.display = "block";
-  else starBg.style.display = "none";
-
+  starBg.style.display = name === "space" ? "block" : "none";
   localStorage.setItem("selectedTheme", name);
   modal.classList.add("hidden");
+}
+
+function updateThemeButtons(quizCompletion){
+  themeButtons.forEach(btn => {
+    const theme = btn.getAttribute("data-theme");
+    const required = unlocks[theme];
+    if(quizCompletion >= required){
+      btn.classList.remove("locked");
+      btn.removeAttribute("disabled");
+      btn.removeAttribute("data-locked-text");
+    } else {
+      btn.classList.add("locked");
+      btn.setAttribute("disabled", "true");
+      btn.setAttribute("data-locked-text", `${required - quizCompletion} more quiz${required - quizCompletion > 1 ? 'zes' : ''} needed`);
+    }
+  });
 }
 
 // Theme selection click
 themeButtons.forEach(btn => {
   btn.addEventListener("click", () => {
+    if(btn.disabled) return;
     const selected = btn.getAttribute("data-theme");
     applyTheme(selected);
   });
 });
 
-// Load saved theme
 window.addEventListener("DOMContentLoaded", () => {
-  loadStats();
+  const quizCompletion = loadStats();
+  updateThemeButtons(quizCompletion);
   const saved = localStorage.getItem("selectedTheme");
-  if (saved) applyTheme(saved);
+  if(saved) applyTheme(saved);
 });
 </script>
 </body>

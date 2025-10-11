@@ -3,40 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Basic Probability Quiz</title>
+<title>Negative Numbers Quiz</title>
 <style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg,#f0f9ff,#cbebff);
-    margin:0; padding:0;
-    display:flex; flex-direction:column; align-items:center; min-height:100vh;
-  }
-  .header {
-    background-color:#18bc9c; color:white;
-    width:100%; padding:20px 0; text-align:center;
-    box-shadow:0 4px 10px rgba(0,0,0,0.2);
-  }
-  #game-canvas {
-    margin-top:30px; border:3px solid #18bc9c;
-    border-radius:10px; background-color:white;
-    box-shadow:0 0 15px rgba(0,0,0,0.1);
-  }
-  #quiz-container {
-    margin-top:25px; padding:20px;
-    background:white; border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.1);
-    width:90%; max-width:480px; text-align:center;
-  }
+  body { font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:linear-gradient(135deg,#f0f9ff,#cbebff); margin:0; padding:0; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+  .header { background-color:#18bc9c; color:white; width:100%; padding:20px 0; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
+  #game-canvas { margin-top:30px; border:3px solid #18bc9c; border-radius:10px; background-color:white; box-shadow:0 0 15px rgba(0,0,0,0.1); }
+  #quiz-container { margin-top:25px; padding:20px; background:white; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.1); width:90%; max-width:480px; text-align:center; }
   .question { font-size:1.2rem; margin-bottom:15px; color:#2c3e50; }
-  input[type="text"] {
-    padding:10px; width:60%; font-size:1rem;
-    border:2px solid #ccc; border-radius:6px; margin-bottom:10px;
-  }
-  button {
-    background-color:#18bc9c; color:white; border:none;
-    padding:10px 16px; margin:6px; font-size:1rem;
-    border-radius:6px; cursor:pointer;
-  }
+  input[type="text"] { padding:10px; width:60%; font-size:1rem; border:2px solid #ccc; border-radius:6px; margin-bottom:10px; }
+  button { background-color:#18bc9c; color:white; border:none; padding:10px 16px; margin:6px; font-size:1rem; border-radius:6px; cursor:pointer; }
   button:hover { background-color:#149c82; }
   #feedback { margin-top:12px; font-size:1.1rem; font-weight:bold; }
   #score-section { margin-top:16px; font-size:1.2rem; color:#34495e; }
@@ -48,12 +23,7 @@
   #review-section li { margin-bottom:8px; background:#fafafa; padding:8px; border-radius:6px; border:1px solid #eee; }
 
   /* Whiteboard */
-  #whiteboard-container {
-    position: fixed; top: 60px; right: 20px; width: 400px; height: 300px;
-    background: white; border: 2px solid #ccc; border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.25); display: none; flex-direction: column;
-    z-index: 9999; overflow: hidden;
-  }
+  #whiteboard-container { position: fixed; top: 60px; right: 20px; width: 400px; height: 300px; background: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.25); display: none; flex-direction: column; z-index: 9999; overflow: hidden; }
   #whiteboard-canvas { flex: 1; background: #fff; cursor: crosshair; display: block; }
   .whiteboard-controls { display: flex; justify-content: space-between; background: #f1f1f1; padding: 6px; border-top: 1px solid #ddd; }
   .whiteboard-controls button { padding: 6px 8px; border: none; border-radius: 4px; cursor: pointer; background: #eee; color: #222; }
@@ -62,7 +32,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-<div class="header"><h1>Basic Probability Quiz</h1></div>
+<div class="header"><h1>Arithmetic With Negative Numbers Quiz</h1></div>
 
 <canvas id="game-canvas" width="500" height="300"></canvas>
 <div id="quiz-container" style="display:none;">
@@ -85,107 +55,125 @@
 </div>
 
 <script>
-const canvas=document.getElementById("game-canvas");
-const ctx=canvas.getContext("2d");
-const target={x:150,y:100,radius:25,dx:2,dy:1.5};
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+const target = {x:150, y:100, radius:25, dx:2, dy:1.5};
 let score=0, questionCount=0, correctAnswer="", quizOver=false, questionActive=false;
-let difficulty="medium", animationFrameId, reviewData=[];
+let difficulty="easy", animationFrameId, reviewData=[];
 
-// Question pools
-const easyQuestions=[
-  {question:"A single die is rolled. What is the probability of rolling a 3?", answer:"1/6"},
-  {question:"A coin is flipped once. What is the probability of getting heads?", answer:"1/2"},
-  {question:"A bag contains 1 red and 1 blue ball. If you pick one ball at random, what is the probability it is red?", answer:"1/2"}
-];
-const mediumQuestions=[
-  {question:"A die is rolled. What is the probability of rolling an even number?", answer:"1/2"},
-  {question:"A bag contains 3 red and 2 blue balls. If one ball is picked at random, what is the probability it is blue?", answer:"2/5"},
-  {question:"Two coins are flipped. What is the probability of getting exactly one head?", answer:"1/2"}
-];
-const hardQuestions=[
-  {question:"A bag contains 5 red and 3 blue balls. If one ball is picked at random, what is the probability it is red?", answer:"5/8"},
-  {question:"Two dice are rolled. What is the probability of getting a sum of 7?", answer:"1/6"},
-  {question:"A box contains 4 green, 2 red, and 4 blue balls. One ball is chosen at random. What is the probability it is green?", answer:"4/10"}
+// --- Question Pools (Adjusted Difficulty) ---
+const easyQuestions = [
+  { question: "-3 + 5 =", answer: "2" },
+  { question: "4 - 7 =", answer: "-3" },
+  { question: "-2 - 3 =", answer: "-5" },
+  { question: "1 + (-4) =", answer: "-3" },
+  { question: "-5 + 2 =", answer: "-3" },
+  { question: "0 - (-3) =", answer: "3" },
+  { question: "-1 * 5 =", answer: "-5" }, 
+  { question: "6 / -2 =", answer: "-3" }
 ];
 
-// Canvas target
-document.addEventListener("DOMContentLoaded",()=>{
-  drawTarget(); animate();
-  canvas.addEventListener("click",shootTarget);
+const mediumQuestions = [
+  { question: "-3 * 4 =", answer: "-12" },
+  { question: "-8 / 2 =", answer: "-4" },
+  { question: "12 / -3 =", answer: "-4" },
+  { question: "-5 * -3 =", answer: "15" },
+  { question: "9 + (-7) =", answer: "2" },
+  { question: "-3 + 4 * -2 =", answer: "-11" }, 
+  { question: "(-5) * -3 - 6 =", answer: "9" }, 
+  { question: "12 / -3 + 7 =", answer: "3" } 
+];
+
+const hardQuestions = [
+  { question: "-8 - (-3) * 2 =", answer: "-2" },
+  { question: "(-4 + 6) * -3 =", answer: "-6" },
+  { question: "15 / -5 + (-2) =", answer: "-5" },
+  { question: "-7 + 8 * -2 =", answer: "-23" },
+  { question: "(-6 - 4) / 2 =", answer: "-5" },
+  { question: "(-3 + 7) * -2 =", answer: "-8" }
+];
+
+
+// --- Canvas Target ---
+document.addEventListener("DOMContentLoaded", () => {
+  drawTarget();
+  animate();
+  canvas.addEventListener("click", shootTarget);
 });
 
-function drawTarget(){
+function drawTarget() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.beginPath();
   ctx.arc(target.x,target.y,target.radius,0,2*Math.PI);
-  ctx.fillStyle="#18bc9c"; ctx.fill();
-  ctx.strokeStyle="#2c3e50"; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle="#18bc9c";
+  ctx.fill();
+  ctx.strokeStyle="#2c3e50";
+  ctx.lineWidth=3;
+  ctx.stroke();
 }
 
-function animate(){
-  if(quizOver||questionActive) return;
-  target.x+=target.dx; target.y+=target.dy;
+function animate() {
+  if(quizOver || questionActive) return;
+  target.x += target.dx; target.y += target.dy;
   if(target.x+target.radius>canvas.width||target.x-target.radius<0) target.dx*=-1;
   if(target.y+target.radius>canvas.height||target.y-target.radius<0) target.dy*=-1;
-  drawTarget(); animationFrameId=requestAnimationFrame(animate);
+  drawTarget();
+  animationFrameId = requestAnimationFrame(animate);
 }
 
-function shootTarget(e){
-  if(questionActive||quizOver) return;
-  const rect=canvas.getBoundingClientRect(), x=e.clientX-rect.left, y=e.clientY-rect.top;
-  if(Math.hypot(x-target.x,y-target.y)<=target.radius){
-    cancelAnimationFrame(animationFrameId); generateQuestion();
+function shootTarget(e) {
+  if(questionActive || quizOver) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  if(Math.hypot(x-target.x, y-target.y) <= target.radius) {
+    cancelAnimationFrame(animationFrameId);
+    generateQuestion();
   }
 }
 
-function applyDifficultyToTarget(){
-  if(difficulty==="easy"){target.radius=32; target.dx=1.8; target.dy=1.2;}
-  else if(difficulty==="medium"){target.radius=25; target.dx=2.8; target.dy=1.8;}
-  else{target.radius=18; target.dx=4; target.dy=2.8;}
+function applyDifficultyToTarget() {
+  if(difficulty==="easy"){ target.radius=32; target.dx=1.8; target.dy=1.2; }
+  else if(difficulty==="medium"){ target.radius=25; target.dx=2.8; target.dy=1.8; }
+  else{ target.radius=18; target.dx=4; target.dy=2.8; }
 }
 
-function getQuestion(){
+// --- Generate Questions ---
+function getQuestion() {
   let pool;
-  if(difficulty==="easy") pool=easyQuestions;
-  else if(difficulty==="medium") pool=mediumQuestions;
-  else pool=hardQuestions;
+  if(difficulty==="easy") pool = easyQuestions;
+  else if(difficulty==="medium") pool = mediumQuestions;
+  else pool = hardQuestions;
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
-// Normalize fractions to compare equivalent answers
-function normalizeFraction(input){
-  if(input.includes('/')){
-    let parts=input.split('/').map(Number);
-    let gcd=(a,b)=>b?gcd(b,a%b):a;
-    let d=gcd(parts[0],parts[1]);
-    return `${parts[0]/d}/${parts[1]/d}`;
-  }
-  return input.trim();
+function generateQuestion() {
+  const q = getQuestion();
+  correctAnswer = q.answer;
+  document.getElementById("question-text").innerHTML = q.question;
+  document.getElementById("answer-input").value = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("submit-btn").style.display = "inline-block";
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("quiz-container").style.display = "block";
+  questionActive = true;
+  reviewData.push({question:q.question, correct:correctAnswer, playerAnswer:null, result:null});
 }
 
-function generateQuestion(){
-  const q=getQuestion();
-  correctAnswer=q.answer;
-  document.getElementById("question-text").innerHTML=q.question;
-  document.getElementById("answer-input").value="";
-  document.getElementById("feedback").textContent="";
-  document.getElementById("submit-btn").style.display="inline-block";
-  document.getElementById("next-btn").style.display="none";
-  document.getElementById("quiz-container").style.display="block";
-  questionActive=true;
-  reviewData.push({question:q.question,correct:correctAnswer,playerAnswer:null,result:null});
-}
+function normalizeFraction(input) { return input.trim(); }
 
-function submitAnswer(){
-  const inputVal=document.getElementById("answer-input").value.trim();
-  if(!inputVal){alert("Enter your answer."); return;}
-  const container=document.getElementById("quiz-container");
-  const isCorrect=(normalizeFraction(inputVal)===normalizeFraction(correctAnswer));
-  reviewData[reviewData.length-1].playerAnswer=inputVal;
-  reviewData[reviewData.length-1].result=isCorrect;
-  if(isCorrect){document.getElementById("feedback").textContent="✅ Correct!"; container.classList.add("flash-correct"); score++;}
-  else{document.getElementById("feedback").textContent=`❌ Incorrect. Correct answer: ${correctAnswer}`; container.classList.add("flash-incorrect");}
+function submitAnswer() {
+  const inputVal = document.getElementById("answer-input").value.trim();
+  if(!inputVal){ alert("Enter your answer."); return; }
+  const container = document.getElementById("quiz-container");
+  const isCorrect = (normalizeFraction(inputVal) === normalizeFraction(correctAnswer));
+  const current = reviewData[reviewData.length-1];
+  current.playerAnswer = inputVal;
+  current.result = isCorrect;
+  if(isCorrect){ document.getElementById("feedback").textContent="✅ Correct!"; container.classList.add("flash-correct"); score++; }
+  else{ document.getElementById("feedback").textContent=`❌ Incorrect. Correct: ${correctAnswer}`; container.classList.add("flash-incorrect"); }
 
+  // Difficulty progression
   if(isCorrect && difficulty==="easy") difficulty="medium";
   else if(isCorrect && difficulty==="medium") difficulty="hard";
   else if(!isCorrect && difficulty==="hard") difficulty="medium";
@@ -196,8 +184,8 @@ function submitAnswer(){
   document.getElementById("submit-btn").style.display="none";
   document.getElementById("next-btn").style.display="inline-block";
 
-  if(questionCount>=5){
-    quizOver=true;
+  if(questionCount >= 5){
+    quizOver = true;
     document.getElementById("score-section").textContent=`Final Score: ${score}/5`;
     document.getElementById("next-btn").style.display="none";
     document.getElementById("restart-btn").style.display="inline-block";
@@ -206,15 +194,18 @@ function submitAnswer(){
   } else {
     document.getElementById("score-section").textContent=`Score: ${score}/${questionCount}`;
   }
-  if (score >= 4){
-      let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
-      localStorage.setItem("QuizCompletion", QuizCompletion+1);
-    }
+
+  // Increment quiz completion if high score
+  if(score>=4){
+    let QuizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
+    localStorage.setItem("QuizCompletion", QuizCompletion+1);
+  }
+
   questionActive=false;
 }
 
 function nextQuestion(){ document.getElementById("quiz-container").style.display="none"; questionActive=false; animate(); }
-function restartQuiz(){ score=0; questionCount=0; difficulty="medium"; quizOver=false; questionActive=false; reviewData=[]; correctAnswer=""; document.getElementById("score-section").textContent=""; document.getElementById("feedback").textContent=""; document.getElementById("submit-btn").disabled=false; document.getElementById("restart-btn").style.display="none"; document.getElementById("quiz-container").style.display="none"; document.getElementById("review-section").style.display="none"; animate(); }
+function restartQuiz(){ score=0; questionCount=0; difficulty="easy"; quizOver=false; questionActive=false; reviewData=[]; correctAnswer=""; document.getElementById("score-section").textContent=""; document.getElementById("feedback").textContent=""; document.getElementById("submit-btn").disabled=false; document.getElementById("restart-btn").style.display="none"; document.getElementById("quiz-container").style.display="none"; document.getElementById("review-section").style.display="none"; animate(); }
 function showReview(){ const reviewEl=document.getElementById("review-section"); reviewEl.innerHTML="<h3>Review Your Answers:</h3><ul>"+reviewData.map(d=>`<li>${d.question} | Your answer: ${d.playerAnswer} | ${d.result?"✅":"❌"} (Correct: ${d.correct})</li>`).join("")+"</ul>"; reviewEl.style.display="block"; }
 
 // --- WHITEBOARD ---
