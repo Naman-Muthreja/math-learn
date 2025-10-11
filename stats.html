@@ -18,6 +18,7 @@
     overflow-x: hidden;
   }
   .header {
+    position: relative;
     background-color: #18bc9c;
     color: white;
     width: 100%;
@@ -25,6 +26,16 @@
     text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     transition: background-color 0.6s ease;
+  }
+  .backbutton {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .backbutton img {
+    width: 70px;
+    height: 70px;
   }
   .stats-container {
     display: flex;
@@ -103,7 +114,6 @@
     transform: scale(1.05);
   }
 
-  /* Locked theme */
   .locked {
     opacity: 0.4;
     cursor: not-allowed;
@@ -134,13 +144,19 @@
 </style>
 </head>
 <body>
-<div class="header"><h1>User Statistics</h1></div>
+<div class="header">
+  <a class="backbutton" href="Dashboard.html">
+    <img src="backbutton.png" alt="Back" />
+  </a>
+  <h1>User Statistics</h1>
+</div>
 
 <button id="theme-btn">🎨 Themes</button>
 
 <div id="theme-selector" class="theme-modal hidden">
   <h3>Choose a Theme</h3>
   <div class="theme-options">
+    <button data-theme="original">🟢 Original</button>
     <button data-theme="purple">💜 Purple</button>
     <button data-theme="water">🌊 Water</button>
     <button data-theme="volcanic">🌋 Volcanic</button>
@@ -195,6 +211,7 @@ themeBtn.addEventListener("click", () => modal.classList.toggle("hidden"));
 
 // Quiz unlock requirements
 const unlocks = {
+  original: 0,
   purple: 1,
   water: 2,
   volcanic: 4,
@@ -204,6 +221,7 @@ const unlocks = {
 };
 
 const themes = {
+  original: { background: "linear-gradient(135deg,#f0f9ff,#cbebff)", header: "#18bc9c", card:"white", text:"#2c3e50", border:"#18bc9c" },
   purple: { background: "linear-gradient(135deg, #3a0ca3, #7209b7)", header: "#9d4edd", card:"#f3e8ff", text:"#3c096c", border:"#7209b7" },
   water: { background: "linear-gradient(135deg, #a2d9ff, #0077be)", header:"#0099cc", card:"#e0f7ff", text:"#004466", border:"#0099cc" },
   volcanic: { background:"linear-gradient(135deg, #3b0a0a, #ff4500)", header:"#ff6b3d", card:"#fff0e0", text:"#8b0000", border:"#ff4500" },
