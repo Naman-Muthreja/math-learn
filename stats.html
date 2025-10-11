@@ -14,6 +14,8 @@
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
+    transition: background 0.6s ease, color 0.6s ease;
+    overflow-x: hidden;
   }
   .header {
     background-color: #18bc9c;
@@ -22,6 +24,7 @@
     padding: 20px 0;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: background-color 0.6s ease;
   }
   .stats-container {
     display: flex;
@@ -40,22 +43,103 @@
     text-align: center;
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     border-left: 5px solid #18bc9c;
+    transition: background 0.6s ease, border-color 0.6s ease;
   }
   .stat-card h2 {
     font-size: 1.8rem;
     margin: 0;
     color: #18bc9c;
     word-break: break-word;
+    transition: color 0.6s ease;
   }
   .stat-card p {
     margin: 10px 0 0 0;
     font-size: 1rem;
     color: #2c3e50;
+    transition: color 0.6s ease;
+  }
+
+  /* 🎨 Theme Button */
+  #theme-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #18bc9c;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+  #theme-btn:hover {
+    background: #149f85;
+    transform: translateY(-2px);
+  }
+
+  /* 🎨 Theme Modal */
+  .theme-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px 30px;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    z-index: 1000;
+  }
+  .theme-modal.hidden {
+    display: none;
+  }
+  .theme-options button {
+    margin: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+  .theme-options button:hover {
+    transform: scale(1.05);
+  }
+
+  /* 🌌 Space star effect */
+  .space-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
 <div class="header"><h1>User Statistics</h1></div>
+
+<!-- 🎨 Theme Button -->
+<button id="theme-btn">🎨 Themes</button>
+
+<!-- 🎨 Theme Selector Modal -->
+<div id="theme-selector" class="theme-modal hidden">
+  <h3>Choose a Theme</h3>
+  <div class="theme-options">
+    <button data-theme="original">🟢 Original</button>
+    <button data-theme="purple">💜 Purple</button>
+    <button data-theme="water">🌊 Water</button>
+    <button data-theme="volcanic">🌋 Volcanic</button>
+    <button data-theme="space">🌌 Space</button>
+    <button data-theme="gold">🥇 Gold</button>
+    <button data-theme="dark">🌑 Dark</button>
+  </div>
+</div>
 
 <div class="stats-container">
   <div class="stat-card">
@@ -72,27 +156,125 @@
   </div>
   <div class="stat-card">
     <h2 id="quizCompletion">0</h2>
-    <p> Quizzes completed</p>
+    <p>Quizzes Completed</p>
   </div>
 </div>
 
+<!-- optional star background -->
+<div class="space-stars" id="space-stars" style="display:none;"></div>
+
 <script>
 function loadStats() {
-  // Pull data from localStorage
   const displayName = localStorage.getItem("username") || "Unknown";
   const email = localStorage.getItem("email") || "Unknown";
   const lastLoginDate = localStorage.getItem("lastLoginDate") || "Never";
   const quizCompletion = Number(localStorage.getItem("QuizCompletion") || 0);
 
-  // Populate the cards
   document.getElementById("displayName").textContent = displayName;
   document.getElementById("email").textContent = email;
   document.getElementById("lastLogin").textContent = new Date(lastLoginDate).toLocaleString() || "Never";
   document.getElementById("quizCompletion").textContent = quizCompletion;
 }
 
-// Load stats when page loads
-document.addEventListener("DOMContentLoaded", loadStats);
+// 🎨 THEME SYSTEM
+const themeBtn = document.getElementById("theme-btn");
+const modal = document.getElementById("theme-selector");
+const themeButtons = document.querySelectorAll(".theme-options button");
+const starBg = document.getElementById("space-stars");
+
+themeBtn.addEventListener("click", () => {
+  modal.classList.toggle("hidden");
+});
+
+// Define theme styles
+const themes = {
+  original: {
+    background: "linear-gradient(135deg,#f0f9ff,#cbebff)",
+    header: "#18bc9c",
+    card: "white",
+    text: "#2c3e50",
+    border: "#18bc9c"
+  },
+  purple: {
+    background: "linear-gradient(135deg, #3a0ca3, #7209b7)",
+    header: "#9d4edd",
+    card: "#f3e8ff",
+    text: "#3c096c",
+    border: "#7209b7"
+  },
+  water: {
+    background: "linear-gradient(135deg, #a2d9ff, #0077be)",
+    header: "#0099cc",
+    card: "#e0f7ff",
+    text: "#004466",
+    border: "#0099cc"
+  },
+  volcanic: {
+    background: "linear-gradient(135deg, #3b0a0a, #ff4500)",
+    header: "#ff6b3d",
+    card: "#fff0e0",
+    text: "#8b0000",
+    border: "#ff4500"
+  },
+  space: {
+    background: "radial-gradient(circle at top left, #000014, #050a30, #000014)",
+    header: "#000014",
+    card: "rgba(25, 25, 45, 0.85)",
+    text: "#45a29e",
+    border: "#00fcf1"
+  },
+  gold: {
+    background: "linear-gradient(135deg, #fff8dc, #ffd700)",
+    header: "#b8860b",
+    card: "#fffaf0",
+    text: "#b8860b",
+    border: "#daa520"
+  },
+  dark: {
+    background: "linear-gradient(135deg, #121212, #1e1e1e, #2c2c2c)",
+    header: "#222",
+    card: "#1a1a1a",
+    text: "#f5f5f5",
+    border: "#444"
+  }
+};
+
+// Apply theme
+function applyTheme(name) {
+  const t = themes[name];
+  if (!t) return;
+  document.body.style.background = t.background;
+  document.querySelector(".header").style.backgroundColor = t.header;
+  document.querySelectorAll(".stat-card").forEach(card => {
+    card.style.background = t.card;
+    card.style.borderColor = t.border;
+  });
+  document.querySelectorAll(".stat-card h2, .stat-card p").forEach(el => {
+    el.style.color = t.text;
+  });
+
+  // special space mode
+  if (name === "space") starBg.style.display = "block";
+  else starBg.style.display = "none";
+
+  localStorage.setItem("selectedTheme", name);
+  modal.classList.add("hidden");
+}
+
+// Theme selection click
+themeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const selected = btn.getAttribute("data-theme");
+    applyTheme(selected);
+  });
+});
+
+// Load saved theme
+window.addEventListener("DOMContentLoaded", () => {
+  loadStats();
+  const saved = localStorage.getItem("selectedTheme");
+  if (saved) applyTheme(saved);
+});
 </script>
 </body>
 </html>
